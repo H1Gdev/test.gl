@@ -1,0 +1,112 @@
+GL(Graphics Library)
+
+OpenGL
+https://www.opengl.org/
+
+OpenGL ES
+OpenGL for Embedded Systems
+https://www.khronos.org/opengles/
+
+WebGL
+https://developer.mozilla.org/docs/Web/API/WebGL_API
+https://www.khronos.org/webgl/
+
+WebGL 2.0	webgl2	OpenGL ES 3.0	GLSL ES 3.00
+WebGL 1.0	webgl	OpenGL ES 2.0	GLSL ES 1.00
+
+
+Vertex			頂点
+
+Point			点
+Line			線分
+Polygon			多角形(ポリゴン)
+
+Front face		正面(表)
+Back face		背面(裏)
+
+Clockwise(CW)		時計回り
+Counter-Clockwise(CCW)	反時計回り
+
+
+			[OpenGL]	[DirectX]
+Coordinate System	Right-handed	Left-handed	※1
+Front face(default)	CCW		CW
+
+※1. 手の指でX軸の正の向きを指し、指をY軸の正の向きに曲げた時、親指が指している方向がZ軸の正の向き
+
+Buffer
+Vertex Buffer
+Index Buffer
+
+
+Rendering Pipeline
+https://www.khronos.org/opengl/wiki/Rendering_Pipeline_Overview
+
+座標変換
+ モデル変換(ワールド変換)
+  平行移動
+  拡大・縮小
+  回転
+ ビュー変換
+ プロジェクション変換
+  透視投影(Perspective Projection)
+  正投影(Orthographic Projection)
+
+Homogeneous coordinate
+同次座標
+(x, y, z, w)
+※行列の演算を使用する為
+--
+[直交座標系]    <-> [同次座標系]
+(x/w, y/w, z/w) <-> (x, y, z, w)
+(x, y, z)       <-> (x, y, z, 1)
+(x, y)          <-> (x, y, 0, 1)
+--
+
+Culling
+カリング
+-> レンダリング(描画)の対象部分を選択する 
+
+Clipping
+->
+
+Per-Sample Processing
+https://www.khronos.org/opengl/wiki/Per-Sample_Processing
+Depth Test	深度テスト
+
+Shader
+https://www.khronos.org/opengl/wiki/Shader
+-> Programmable shader
+-> 3Dモデルを描画するもの
+
+Vertex Shader
+-> 頂点単位
+
+Fragment Shader
+Pixel Shader
+-> ピクセル単位
+
+Geometry Shader
+
+Tessellation Control Shader
+Tessellation Evaluation Shader
+
+Compute Shader
+-> not part of Rendering Pipeline
+
+OpenGL Shading Language(GLSL)
+https://www.khronos.org/opengl/wiki/OpenGL_Shading_Language
+
+修飾子
+attribute	in
+uniform
+varying		in, out
+in
+out
+shared
+
+flat
+
+Built-in Variable (GLSL)
+https://www.khronos.org/opengl/wiki/Built-in_Variable_(GLSL)
+-> per shaders
