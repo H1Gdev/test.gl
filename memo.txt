@@ -34,9 +34,16 @@ Front face(default)	CCW		CW
 
 ※1. 手の指でX軸の正の向きを指し、指をY軸の正の向きに曲げた時、親指が指している方向がZ軸の正の向き
 
+
 Buffer
 Vertex Buffer
 Index Buffer
+
+Buffer Object
+https://www.khronos.org/opengl/wiki/Buffer_Object
+-> memory allocated by the OpenGL context (AKA the GPU)
+
+Vertex Buffer Object(VBO)
 
 
 Rendering Pipeline
@@ -74,6 +81,7 @@ Per-Sample Processing
 https://www.khronos.org/opengl/wiki/Per-Sample_Processing
 Depth Test	深度テスト
 
+
 Shader
 https://www.khronos.org/opengl/wiki/Shader
 -> Programmable shader
@@ -93,6 +101,7 @@ Tessellation Evaluation Shader
 
 Compute Shader
 -> not part of Rendering Pipeline
+
 
 OpenGL Shading Language(GLSL)
 https://www.khronos.org/opengl/wiki/OpenGL_Shading_Language
