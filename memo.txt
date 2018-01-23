@@ -7,12 +7,21 @@ OpenGL ES
 OpenGL for Embedded Systems
 https://www.khronos.org/opengles/
 
+Android
+https://developer.android.com/guide/topics/graphics/opengl.html
+
 WebGL
 https://developer.mozilla.org/docs/Web/API/WebGL_API
 https://www.khronos.org/webgl/
 
 WebGL 2.0	webgl2	OpenGL ES 3.0	GLSL ES 3.00
 WebGL 1.0	webgl	OpenGL ES 2.0	GLSL ES 1.00
+
+
+Khronos Group
+https://www.khronos.org/
+
+OpenGL Architecture Review Board(ARB)
 
 
 Vertex			頂点
@@ -44,6 +53,18 @@ https://www.khronos.org/opengl/wiki/Buffer_Object
 -> memory allocated by the OpenGL context (AKA the GPU)
 
 Vertex Buffer Object(VBO)
+Uniform Buffer Object(UBO)
+Shader Storage Buffer Object(SSBO)
+
+Framebuffer
+https://www.khronos.org/opengl/wiki/Framebuffer
+-> レンダリング(2D)で使用するバッファ群
+Default Framebuffer
+-> provided by the OpenGL Context
+Framebuffer Object(FBO)
+-> user-created framebuffer
+
+Renderbuffer Object
 
 
 Rendering Pipeline
