@@ -2,6 +2,7 @@ GL(Graphics Library)
 
 OpenGL
 https://www.opengl.org/
+https://www.khronos.org/opengl/
 
 OpenGL ES
 OpenGL for Embedded Systems
@@ -25,10 +26,13 @@ OpenGL Architecture Review Board(ARB)
 
 
 Vertex			頂点
+Primitive		頂点により描画される図形
 
 Point			点
 Line			線分
 Polygon			多角形(ポリゴン)
+
+Normal			法線
 
 Front face		正面(表)
 Back face		背面(裏)
@@ -45,6 +49,7 @@ Front face(default)	CCW		CW
 
 
 Buffer
+(3D)
 Vertex Buffer
 Index Buffer
 
@@ -56,15 +61,27 @@ Vertex Buffer Object(VBO)
 Uniform Buffer Object(UBO)
 Shader Storage Buffer Object(SSBO)
 
+(2D)
 Framebuffer
 https://www.khronos.org/opengl/wiki/Framebuffer
--> レンダリング(2D)で使用するバッファ群
+-> レンダリングで使用するバッファ群(color, depth, stencil, etc.)
+-> Textureも紐付け可能
 Default Framebuffer
 -> provided by the OpenGL Context
 Framebuffer Object(FBO)
 -> user-created framebuffer
 
 Renderbuffer Object
+-> レンダリングで使用するバッファ
+-> use as color buffer, depth buffer, stencil buffer, etc.
+
+Texture
+
+1. create
+2. bind
+3. operate
+4. unbind	bind the other buffer or bind null.
+5. delete
 
 
 Rendering Pipeline
@@ -116,6 +133,7 @@ Pixel Shader
 -> ピクセル単位
 
 Geometry Shader
+-> プリミティブ単位
 
 Tessellation Control Shader
 Tessellation Evaluation Shader
