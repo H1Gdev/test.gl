@@ -158,3 +158,8 @@ flat
 Built-in Variable (GLSL)
 https://www.khronos.org/opengl/wiki/Built-in_Variable_(GLSL)
 -> per shaders
+
+
+Reference Page
+https://www.khronos.org/registry/OpenGL-Refpages/
+-> accordion-styleのindexに切り替えるとAPIとGLSLに分けて表示される
