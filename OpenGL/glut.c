@@ -4,6 +4,9 @@
 // OpenGL Utility Toolkit
 // https://www.opengl.org/resources/libraries/glut/
 
+// FreeGLUT
+// http://freeglut.sourceforge.net/
+
 #define WINDOW_NAME "Test GLUT"
 
 static void display(void) {
