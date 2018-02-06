@@ -6,6 +6,10 @@
 
 #define WINDOW_NAME "OpenGL version"
 
+#ifndef GL_SHADING_LANGUAGE_VERSION
+#define GL_SHADING_LANGUAGE_VERSION 0x8B8C
+#endif
+
 static void displayInfo(void) {
   // https://www.khronos.org/opengl/wiki/GLAPI/glGetString
 

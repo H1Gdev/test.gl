@@ -2,12 +2,16 @@
 
 #include <GL/gl.h>
 
-// https://www.khronos.org/opengl/wiki/OpenGL_Reference
-// https://www.khronos.org/opengl/wiki/OpenGL_Type
+// GLEW
+// OpenGL Extension Wrangler Library
+// http://glew.sourceforge.net/
 
 #define WINDOW_NAME "OpenGL basic"
 
 #define USE_VERTEX_ARRAY
+
+// https://www.khronos.org/opengl/wiki/OpenGL_Reference
+// https://www.khronos.org/opengl/wiki/OpenGL_Type
 
 static void init(void) {
 #if 1
