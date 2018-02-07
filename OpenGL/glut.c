@@ -15,6 +15,15 @@ static void display(void) {
 static void reshape(int width, int height) {
 }
 
+static void idle(void) {
+#if 0
+  glutPostRedisplay();
+#endif
+}
+
+static void timer(int value) {
+}
+
 int main(int argc, char* argv[])
 {
   // Initialization
@@ -30,6 +39,8 @@ int main(int argc, char* argv[])
   // Callback Registration
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
+  glutIdleFunc(idle);
+  glutTimerFunc(1 * 1000, timer, 0);
 
   // Beginning Event Processing
   glutMainLoop();

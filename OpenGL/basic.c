@@ -1,10 +1,6 @@
-#include <GL/glut.h>
-
 #include <GL/gl.h>
 
-// GLEW
-// OpenGL Extension Wrangler Library
-// http://glew.sourceforge.net/
+#include <GL/glut.h>
 
 #define WINDOW_NAME "OpenGL basic"
 
@@ -21,10 +17,10 @@ static void init(void) {
 
   // Specify color buffer default values.
   // default: [0.0, 0.0, 0.0, 0.0] (black)
-  const GLfloat red = 1.0;
-  const GLfloat green = 1.0;
-  const GLfloat blue = 1.0;
-  const GLfloat alpha = 1.0;
+  const GLfloat red = 1.0F;
+  const GLfloat green = 1.0F;
+  const GLfloat blue = 1.0F;
+  const GLfloat alpha = 1.0F;
   glClearColor(red, green, blue, alpha);
 #endif
 
@@ -54,9 +50,9 @@ static void display(void) {
   const GLsizei stride = sizeof(GLfloat) * 2;
 #endif
   const GLfloat vertex[] = {
-     0.0, 0.0, // 0
-    -1.0, 0.9, // 1
-     1.0, 0.9, // 2
+     0.0F, 0.0F, // 0
+    -1.0F, 0.9F, // 1
+     1.0F, 0.9F, // 2
   };
   glVertexPointer(size, type, stride, vertex);
 

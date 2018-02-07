@@ -1,10 +1,12 @@
-#include <stdio.h>
+#include <GL/gl.h>
 
 #include <GL/glut.h>
 
-#include <GL/gl.h>
+#include <stdio.h>
 
 #define WINDOW_NAME "OpenGL version"
+
+// https://www.khronos.org/opengl/wiki/Core_Language_(GLSL)#OpenGL_and_GLSL_versions
 
 #ifndef GL_SHADING_LANGUAGE_VERSION
 #define GL_SHADING_LANGUAGE_VERSION 0x8B8C
