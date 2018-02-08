@@ -47,13 +47,30 @@ const char* source[] = {
 #ifdef TEST_INPUT_OUTPUT
   "#version 430\n",
   "layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;"
+  ""
   "uniform uint bias;"
+  ""
+  "shared uint bias2;" // shared within work group
+  ""
+  // binding means "binding point".
+  // buffer means "Shader Storage Buffer".
   "layout(std430, binding = 3) buffer ssboLayout"
   "{"
   "  uint data[];"
   "} ssbo;"
+  ""
   "void main() {"
-  "  ssbo.data[gl_WorkGroupID.x] += gl_GlobalInvocationID + bias;"
+  "  bias2 = 0;"
+  "  memoryBarrierShared();" // wait
+  "  if (gl_WorkGroupID.x == 1 && gl_WorkGroupID.y == 1 && gl_WorkGroupID.z == 1) {"
+  "    bias2 = 0;"
+  "  }"
+  "  memoryBarrierShared();"
+  "  if ((gl_WorkGroupID.x % 2) != 0) {"
+  "    ssbo.data[gl_WorkGroupID.x] += gl_GlobalInvocationID.x + bias;"
+  "  } else {"
+  "    ssbo.data[gl_WorkGroupID.x] = bias + bias2;"
+  "  }"
   "}"
 #endif
 };
@@ -85,14 +102,14 @@ static void compute() {
     cout << "max Invocation is " << value << endl;
   }
 
-  glShaderSource(shader, 2, source, NULL);
+  GLint result = GL_FALSE;
 
-  int result = GL_FALSE;
-
-  GLint* data = NULL;
-  size_t length = 10;
+#ifdef TEST_INPUT_OUTPUT
+  GLuint ssbos[] = {0, 0};
+#endif
 
   // Compile
+  glShaderSource(shader, 2, source, NULL); // Set shader code
   glCompileShader(shader);
   glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
   if (result != GL_TRUE) {
@@ -132,20 +149,44 @@ static void compute() {
   }
 
   // Shader Storage Buffer Object
+  // https://www.khronos.org/opengl/wiki/Shader_Storage_Buffer_Object
   // OpenGL -> GLSL
   {
-    GLuint ssbo;
-    glGenBuffers(1, &ssbo);
+    // Create buffer object.
+#ifdef GL_VERSION_4_5
+    glCreateBuffers(2, ssbos);
+#else
+    glGenBuffers(2, ssbos);
+#endif
+    GLuint ssbo = ssbos[0];
+
+    // Bind buffer object.
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
-    data = new GLint[length];
-    for (GLuint i = 0; i < length; ++i) {
-      data[i] = i;
+
+    // Create and initialize data store.(any pre-existing data store is deleted.)
+    GLint data[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}; // initial value(input data)
+    GLsizei size = data ? sizeof(data) : 1024; // data store size
+    GLenum usage = GL_STATIC_READ; // only hint to GL implementation...
+    glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, usage);
+
+    // GL_READ_WRITE
+
+    // Bind buffer target.
+    GLuint index = 3; // SSBO binding point
+#if 0
+    // binding in GLSL.
+    GLuint blockIndex = glGetProgramResourceIndex(program, GL_SHADER_STORAGE_BLOCK, "ssboLayout");
+    if (blockIndex != GL_INVALID_INDEX) {
+      glShaderStorageBlockBinding(program, blockIndex, index);
     }
-    GLenum usage =  GL_DYNAMIC_COPY;
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(GLint) * length, data, usage);
-    GLuint index = 3;
+#endif
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, ssbo);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0); // unbind
+
+    // Update data store.
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(GLint) * 8, sizeof(GLint) * 2, data);
+
+    // Unbind buffer object.
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
   }
 #endif
 
@@ -162,13 +203,31 @@ static void compute() {
 #endif
   }
 
+  // Wait
+  glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
 END:
 #ifdef TEST_INPUT_OUTPUT
-  if (data) {
-    for (GLuint i = 0; i < length; ++i) {
-      data[i] = i;
+  {
+    GLuint ssbo = ssbos[0];
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+    // Map buffer object for read from GPU.
+#if 1
+    GLvoid* data = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+    for (GLuint i = 0; i < 10; ++i) {
+      cout << "data[" << i << "] is " << ((GLint*)data)[i] << endl;
     }
-    delete[] data;
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+#else
+    GLint data[10];
+    glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(data), data);
+    for (GLuint i = 0; i < 10; ++i) {
+      cout << "data[" << i << "] is " << data[i] << endl;
+    }
+#endif
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    glDeleteBuffers(2, ssbos);
   }
 #endif
 
