@@ -19,6 +19,31 @@ using namespace std;
 
 // https://www.khronos.org/opengl/wiki/Compute_Shader
 
+// gl_NumWorkGroups (2, 1, 1)
+//
+// [WorkGroup]  // smallest amount that user can execute.
+//  gl_WorkGroupID (0, 0, 0)
+//  gl_WorkGroupSize (2, 1, 1)  // Local size
+//   [Invocation]
+//    gl_LocalInvocationID  (0, 0, 0)
+//    gl_GlobalInvocationID (0, 0, 0)
+//    gl_LocalInvocationIndex 0
+//   [Invocation]
+//    gl_LocalInvocationID  (1, 0, 0)   // [0, 2), [0, 1), [0, 1)
+//    gl_GlobalInvocationID (1, 0, 0)
+//    gl_LocalInvocationIndex 1
+// [WorkGroup]
+//  gl_WorkGroupID (1, 0, 0)    // [0, 2), [0, 1), [0, 1)
+//  gl_WorkGroupSize (2, 1, 1)
+//   [Invocation]
+//    gl_LocalInvocationID  (0, 0, 0)
+//    gl_GlobalInvocationID (2, 0, 0)
+//    gl_LocalInvocationIndex 2
+//   [Invocation]
+//    gl_LocalInvocationID  (1, 0, 0)
+//    gl_GlobalInvocationID (3, 0, 0)
+//    gl_LocalInvocationIndex 3
+
 //#define MINIMUM_SHADER_CODE
 #define TEST_INPUT_OUTPUT
 
@@ -48,24 +73,34 @@ const char* source[] = {
   "#version 430\n",
   "layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;"
   ""
+  // https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)
   "uniform uint bias;"
   ""
-  "shared uint bias2;" // shared within work group
+  "shared uint bias2[8];" // shared within work group
   ""
+  // https://www.khronos.org/opengl/wiki/Interface_Block_(GLSL)
+  // https://www.khronos.org/opengl/wiki/Layout_Qualifier_(GLSL)
+  "layout(std430, binding = 3) buffer ssboLayout"
   // binding means "binding point".
   // buffer means "Shader Storage Buffer".
-  "layout(std430, binding = 3) buffer ssboLayout"
   "{"
   "  uint data[];"
   "} ssbo;"
   ""
   "void main() {"
-  "  bias2 = 0;"
-  "  memoryBarrierShared();" // wait
-  "  if (gl_WorkGroupID.x == 1 && gl_WorkGroupID.y == 1 && gl_WorkGroupID.z == 1) {"
-  "    bias2 = 0;"
+#if 0
+  "  if (gl_GlobalInvocationID.y == 0 && gl_GlobalInvocationID.z == 0) {"
+  "    ssbo.data[gl_LocalInvocationID.x] = gl_LocalInvocationID.x;"
   "  }"
-  "  memoryBarrierShared();"
+#endif
+#if 0
+  "  if (gl_WorkGroupID == vec3(0, 0, 0)) {"
+  "    bias2[gl_LocalInvocationID.x] = gl_GlobalInvocationID.x;"
+  "    memoryBarrierShared();" // wait
+  "    barrier();"
+  "    ssbo.data[gl_LocalInvocationID.x] = bias2[gl_LocalInvocationID.x + 1];"
+  "  }"
+#endif
   "  if ((gl_WorkGroupID.x % 2) != 0) {"
   "    ssbo.data[gl_WorkGroupID.x] += gl_GlobalInvocationID.x + bias;"
   "  } else {"
@@ -193,7 +228,7 @@ static void compute() {
   // Execute
   {
 #if 1
-    GLuint x = 10; // from 0 to 10
+    GLuint x = 10; // from 0 to 9
     GLuint y = 10;
     GLuint z = 10;
     glDispatchCompute(x, y, z);
@@ -211,14 +246,18 @@ END:
   {
     GLuint ssbo = ssbos[0];
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
-    // Map buffer object for read from GPU.
+    // Read from GPU.
 #if 1
+    // Map buffer object
     GLvoid* data = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-    for (GLuint i = 0; i < 10; ++i) {
-      cout << "data[" << i << "] is " << ((GLint*)data)[i] << endl;
+    if (data) {
+      for (GLuint i = 0; i < 10; ++i) {
+        cout << "data[" << i << "] is " << ((GLint*)data)[i] << endl;
+      }
     }
     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 #else
+    // Get data store
     GLint data[10];
     glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(data), data);
     for (GLuint i = 0; i < 10; ++i) {
