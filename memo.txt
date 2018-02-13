@@ -126,19 +126,20 @@ https://www.khronos.org/opengl/wiki/Shader
 -> 3Dモデルを描画するもの
 
 Vertex Shader
--> 頂点単位
+-> 頂点(Vertex)単位
 
 Fragment Shader
 Pixel Shader
--> ピクセル単位
+-> ピクセル(Pixel)単位
 
 Geometry Shader
--> プリミティブ単位
+-> プリミティブ(Primitive)単位
 
 Tessellation Control Shader
 Tessellation Evaluation Shader
 
 Compute Shader
+-> 起動(Invocation)単位
 -> not part of Rendering Pipeline
 
 

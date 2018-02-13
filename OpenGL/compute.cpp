@@ -104,7 +104,7 @@ const char* source[] = {
   "  if ((gl_WorkGroupID.x % 2) != 0) {"
   "    ssbo.data[gl_WorkGroupID.x] += gl_GlobalInvocationID.x + bias;"
   "  } else {"
-  "    ssbo.data[gl_WorkGroupID.x] = bias + bias2;"
+  "    ssbo.data[gl_WorkGroupID.x] = bias + bias2[gl_LocalInvocationID.x + 1];"
   "  }"
   "}"
 #endif
@@ -120,6 +120,7 @@ static void compute() {
   // Limitation
   // https://www.khronos.org/opengl/wiki/Compute_Shader#Limitations
   {
+    // Minimum values are defined.
     GLint value = 0;
     char name[3] = {'x', 'y', 'z'};
 
@@ -135,6 +136,10 @@ static void compute() {
     }
     glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &value);
     cout << "max Invocation is " << value << endl;
+
+    // Max all shared variables total size
+    glGetIntegerv(GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, &value);
+    cout << "max all shared variables total size is " << value << endl;
   }
 
   GLint result = GL_FALSE;
