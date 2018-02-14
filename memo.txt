@@ -76,12 +76,17 @@ Renderbuffer Object
 -> use as color buffer, depth buffer, stencil buffer, etc.
 
 Texture
+https://www.khronos.org/opengl/wiki/Texture
 
 1. create
 2. bind
 3. operate
 4. unbind	bind the other buffer or bind null.
 5. delete
+
+Texture Image Unit	GL_TEXTURE0 + i
+Image Unit		i
+-> locationとiを紐付ける
 
 
 Rendering Pipeline
