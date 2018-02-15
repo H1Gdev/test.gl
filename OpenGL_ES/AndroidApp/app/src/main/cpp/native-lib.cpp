@@ -1,5 +1,12 @@
+#include <GLES3/gl31.h>
+
 #include <jni.h>
 #include <string>
+
+#define LOG_MSG_FLAG
+//#undef LOG_MSG_FLAG
+#define LOG_TAG "Native-Lib"
+#include "log.h"
 
 extern "C"
 JNIEXPORT jstring JNICALL

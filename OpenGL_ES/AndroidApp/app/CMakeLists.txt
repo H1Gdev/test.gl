@@ -43,6 +43,9 @@ find_library( # Sets the name of the path variable.
               log )
 find_library(android-lib android)
 
+find_library(gles3-lib GLESv3)
+find_library(egl-lib EGL)
+
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
 # build script, prebuilt third-party libraries, or system libraries.
@@ -53,5 +56,6 @@ target_link_libraries( # Specifies the target library.
 
                        # Links the target library to the log library
                        # included in the NDK.
+                       ${gles3-lib}
                        ${log-lib} )
-target_link_libraries(native-activity app-glue ${android-lib} ${log-lib})
+target_link_libraries(native-activity app-glue ${gles3-lib} ${egl-lib} ${android-lib} ${log-lib})

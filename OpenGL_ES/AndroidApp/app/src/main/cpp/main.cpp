@@ -1,3 +1,8 @@
+#include <GLES3/gl31.h>
+// EGL
+// https://www.khronos.org/egl
+#include <EGL/egl.h>
+
 #include <android_native_app_glue.h>
 
 #define LOG_MSG_FLAG
