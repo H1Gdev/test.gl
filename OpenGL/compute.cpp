@@ -62,7 +62,7 @@ static void reshape(int width, int height) {
 }
 
 // shader code
-const char* source[] = {
+const GLchar* source[] = {
 #ifdef MINIMUM_SHADER_CODE
   "#version 430\n", // version 4.30
   "layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;" // Local size

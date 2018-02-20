@@ -10,6 +10,8 @@ https://www.khronos.org/opengles/
 
 Android
 https://developer.android.com/guide/topics/graphics/opengl.html
+https://developer.android.com/reference/android/opengl/package-summary.html
+https://developer.android.com/reference/javax/microedition/khronos/opengles/package-summary.html
 
 WebGL
 https://developer.mozilla.org/docs/Web/API/WebGL_API
