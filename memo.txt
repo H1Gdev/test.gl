@@ -80,11 +80,21 @@ Renderbuffer Object
 Texture
 https://www.khronos.org/opengl/wiki/Texture
 
+1D, 2D, 3D
+
 1. create
-2. bind
-3. operate
-4. unbind	bind the other buffer or bind null.
-5. delete
+2. setup
+ 1. bind
+ 2. operate
+ 3. unbind	bind the other buffer or bind null.
+3. activate
+ 1. active	default is GL_TEXTURE0.
+ 2. bind
+4. delete
+
+glBindTexture()
+-> Texture Objectとの紐付け
+-> 現在のTexture Image Unitとの紐付け
 
 Texture Image Unit	GL_TEXTURE0 + i
 Image Unit		i

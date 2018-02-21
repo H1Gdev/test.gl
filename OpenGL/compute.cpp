@@ -45,7 +45,8 @@ using namespace std;
 //    gl_LocalInvocationIndex 3
 
 //#define MINIMUM_SHADER_CODE
-#define TEST_INPUT_OUTPUT
+//#define TEST_INPUT_OUTPUT
+#define TEST_TEXTURE_INPUT_OUTPUT
 
 static void init(void) {
 #ifdef USE_GLEW
@@ -108,6 +109,17 @@ const GLchar* source[] = {
   "  }"
   "}"
 #endif
+#ifdef TEST_TEXTURE_INPUT_OUTPUT
+  "#version 430\n",
+  "layout(local_size_x = 1, local_size_y = 1) in;"
+  "layout(binding=1, rgba8) readonly uniform image2D inTex;"
+  "layout(binding=2, rgba8) writeonly uniform image2D outTex;"
+  "void main() {"
+  "  ivec2 pos = ivec2(gl_GlobalInvocationID.xy);"
+  "  vec4 texel = imageLoad(inTex, pos);"
+  "  imageStore(outTex, pos, texel);"
+  "}"
+#endif
 };
 
 static void compute() {
@@ -144,8 +156,17 @@ static void compute() {
 
   GLint result = GL_FALSE;
 
+  // WorkGroups
+  GLuint x = 10; // from 0 to 9
+  GLuint y = 10;
+  GLuint z = 10;
+
+
 #ifdef TEST_INPUT_OUTPUT
   GLuint ssbos[] = {0, 0};
+#endif
+#ifdef TEST_TEXTURE_INPUT_OUTPUT
+  GLuint textures[] = {0, 0};
 #endif
 
   // Compile
@@ -229,22 +250,64 @@ static void compute() {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
   }
 #endif
+#ifdef TEST_TEXTURE_INPUT_OUTPUT
+  {
+    // Create texture object.
+#ifdef GL_VERSION_4_5
+    glCreateTextures(GL_TEXTURE_2D, 2, textures);
+#else
+    glGenTextures(2, textures);
+#endif
+    GLuint texture;
+
+    const GLsizei width = 2;
+    const GLsizei height = 2;
+
+    GLbyte color[width * height * 4] = {
+      0xff, 0x52, 0x47, 0x42,
+      0xff, 0x42, 0x49, 0x54,
+      0xff, 0x53, 0x53, 0x42,
+      0xff, 0xff, 0xff, 0xff,
+    };
+
+    // Input Texture
+    texture = textures[0];
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height); // cannot use glTexImage2D()..
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, color);
+    glBindImageTexture(1, texture, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
+
+    // Output Texture
+    texture = textures[1];
+    glActiveTexture(GL_TEXTURE0 + 2);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height); // cannot use glTexImage2D()..
+    glBindImageTexture(2, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+
+    x = width;
+    y = height;
+    z = 1;
+  }
+#endif
 
   // Execute
   {
 #if 1
-    GLuint x = 10; // from 0 to 9
-    GLuint y = 10;
-    GLuint z = 10;
-    glDispatchCompute(x, y, z);
+    glDispatchCompute(x, y, z); // GLuint
 #else
-    GLuint indirect[3] = {10, 10, 10};
-    glDispatchComputeIndirect(indirect);
+    GLuint indirect[3] = {x, y, z};
+    glDispatchComputeIndirect(indirect); // GLintptr because GLuintptr is not defined ?
 #endif
   }
 
   // Wait
+#ifdef TEST_INPUT_OUTPUT
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+#endif
+#ifdef TEST_TEXTURE_INPUT_OUTPUT
+  glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+#endif
 
 END:
 #ifdef TEST_INPUT_OUTPUT
@@ -272,6 +335,21 @@ END:
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     glDeleteBuffers(2, ssbos);
+  }
+#endif
+#ifdef TEST_TEXTURE_INPUT_OUTPUT
+  {
+    // Read from GPU.
+    const GLsizei width = 2;
+    const GLsizei height = 2;
+    GLbyte outColor[width * height * 4];
+
+    GLuint texture = textures[1];
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, outColor);
+    glBindTexture(GL_TEXTURE_2D, 0); // unbind
+
+    glDeleteTextures(2, textures);
   }
 #endif
 
