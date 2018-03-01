@@ -94,11 +94,15 @@ https://www.khronos.org/opengl/wiki/Texture
 
 glBindTexture()
 -> Texture Objectとの紐付け
--> 現在のTexture Image Unitとの紐付け
+-> 現在のTexture Image Unit(GL_TEXTURE0 + i)との紐付け
 
-Texture Image Unit	GL_TEXTURE0 + i
-Image Unit		i
--> locationとiを紐付ける
+GLSL binding
+Sampler
+-> locationにTexture Image Unit(iのみ)を設定して紐付ける
+Image
+-> glBindImageTexture()で紐付ける
+
+Image Unit ≒ Texture Object
 
 
 Rendering Pipeline
@@ -182,6 +186,11 @@ https://www.khronos.org/opengl/wiki/Data_Type_(GLSL)
 Built-in Variable (GLSL)
 https://www.khronos.org/opengl/wiki/Built-in_Variable_(GLSL)
 -> per shaders
+
+Sampler
+https://www.khronos.org/opengl/wiki/Sampler_(GLSL)
+Image
+https://www.khronos.org/opengl/wiki/Image_Load_Store
 
 
 Reference Page

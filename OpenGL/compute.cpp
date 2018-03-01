@@ -1,6 +1,3 @@
-// GLEW
-// OpenGL Extension Wrangler Library
-// http://glew.sourceforge.net/
 #define USE_GLEW
 
 #ifdef USE_GLEW
@@ -120,11 +117,11 @@ const GLchar* source[] = {
   "#define COLOR_B2F(b) (float(b) / 255.0)\n"
   "layout(local_size_x = 1, local_size_y = 1) in;"
 #ifdef USE_COMMON_TEXTURE
-  "layout(binding=1, rgba8) readonly uniform image2D inTex;"
-  "layout(binding=1, rgba8) writeonly uniform image2D outTex;"
+  "layout(binding = 1, rgba8) readonly uniform image2D inTex;"
+  "layout(binding = 1, rgba8) writeonly uniform image2D outTex;"
 #else
-  "layout(binding=1, rgba8) readonly uniform image2D inTex;"
-  "layout(binding=2, rgba8) writeonly uniform image2D outTex;"
+  "layout(binding = 6, rgba8) readonly uniform image2D inTex;"
+  "layout(binding = 7, rgba8) writeonly uniform image2D outTex;"
 #endif
   "void main() {"
   "  ivec2 pos = ivec2(gl_GlobalInvocationID.xy);"
@@ -314,14 +311,19 @@ static void compute() {
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height); // cannot use glTexImage2D()..
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, color);
-    glBindImageTexture(1, texture, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
+    GLuint bindingIndex = 6;
+#if 0
+    // Change image binding index.
+    glUniform1i(glGetUniformLocation(program, "inTex"), bindingIndex);
+#endif
+    glBindImageTexture(bindingIndex, texture, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
 
     // Output Texture
     texture = textures[1];
     glActiveTexture(GL_TEXTURE0 + 2);
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height); // cannot use glTexImage2D()..
-    glBindImageTexture(2, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
+    glBindImageTexture(7, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
 #endif
 #ifdef USE_FRAMEBUFFER
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
