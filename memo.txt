@@ -81,8 +81,9 @@ Texture
 https://www.khronos.org/opengl/wiki/Texture
 
 1D, 2D, 3D
+-> width, height, depth
 
-1. create
+1. create	create Texture Object.
 2. setup
  1. bind
  2. operate
@@ -96,13 +97,19 @@ glBindTexture()
 -> Texture Objectとの紐付け
 -> 現在のTexture Image Unit(GL_TEXTURE0 + i)との紐付け
 
+Image Unit ≒ Texture Object
+
+Sampler Object
+https://www.khronos.org/opengl/wiki/Sampler_Object
+
+glBindSampler()
+-> Texture Image Unit(GL_TEXTURE0 + i)との紐付け
+
 GLSL binding
 Sampler
 -> locationにTexture Image Unit(iのみ)を設定して紐付ける
 Image
 -> glBindImageTexture()で紐付ける
-
-Image Unit ≒ Texture Object
 
 
 Rendering Pipeline

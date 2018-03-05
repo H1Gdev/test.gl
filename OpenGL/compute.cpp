@@ -42,12 +42,13 @@ using namespace std;
 //    gl_LocalInvocationIndex 3
 
 //#define MINIMUM_SHADER_CODE
-//#define TEST_INPUT_OUTPUT
+//#define TEST_SSBO_INPUT_OUTPUT
 #define TEST_TEXTURE_INPUT_OUTPUT
 
 #ifdef TEST_TEXTURE_INPUT_OUTPUT
-#define USE_COMMON_TEXTURE
-//#define USE_FRAMEBUFFER
+#define USE_COMMON_TEXTURE   // Use the same texture object and image binding index.
+#define USE_SAMPLER_TEXTURE  // Use sampler for input texture.
+//#define USE_FRAMEBUFFER    // Cannot use glGetTexImage() in OpenGL ES, so...
 #endif
 
 static void init(void) {
@@ -72,7 +73,7 @@ const GLchar* source[] = {
   "void main() {"
   "}"
 #endif
-#ifdef TEST_INPUT_OUTPUT
+#ifdef TEST_SSBO_INPUT_OUTPUT
   "#version 430\n",
   "layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;"
   ""
@@ -113,19 +114,36 @@ const GLchar* source[] = {
 #endif
 #ifdef TEST_TEXTURE_INPUT_OUTPUT
   "#version 430\n",
+  // https://stackoverflow.com/questions/1914115/converting-color-value-from-float-0-1-to-byte-0-255
   "#define COLOR_F2B(f) (max(0, min(255, int(floor((f) * 256.0)))))\n"
   "#define COLOR_B2F(b) (float(b) / 255.0)\n"
   "layout(local_size_x = 1, local_size_y = 1) in;"
 #ifdef USE_COMMON_TEXTURE
+#ifdef USE_SAMPLER_TEXTURE
+  "uniform sampler2D inTex;"
+#else
   "layout(binding = 1, rgba8) readonly uniform image2D inTex;"
+#endif
   "layout(binding = 1, rgba8) writeonly uniform image2D outTex;"
 #else
+#ifdef USE_SAMPLER_TEXTURE
+  "uniform sampler2D inTex;"
+#else
   "layout(binding = 6, rgba8) readonly uniform image2D inTex;"
+#endif
   "layout(binding = 7, rgba8) writeonly uniform image2D outTex;"
 #endif
   "void main() {"
   "  ivec2 pos = ivec2(gl_GlobalInvocationID.xy);"
+#ifdef USE_SAMPLER_TEXTURE
+  // https://stackoverflow.com/questions/40574677/how-to-normalize-image-coordinates-for-texture-space-in-opengl
+  "  ivec2 size = textureSize(inTex, 0);"
+  "  vec2 posCenter = vec2(pos) + 0.5;" // center of texel
+  "  vec2 posNormalized = posCenter / vec2(size);" // = vec2(posCenter.x / float(size.x), posCenter.y / float(size.y));
+  "  vec4 texel = texture(inTex, posNormalized);"
+#else
   "  vec4 texel = imageLoad(inTex, pos);"
+#endif
   "  imageStore(outTex, pos, texel);"
   "}"
 #endif
@@ -162,6 +180,21 @@ static void compute() {
     glGetIntegerv(GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, &value);
     cout << "max all shared variables total size is " << value << endl;
   }
+#ifdef TEST_TEXTURE_INPUT_OUTPUT
+  // https://www.khronos.org/opengl/wiki/Textures_-_more
+  {
+    GLint value = 0;
+
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
+    cout << "max texture size is " << value << "x" << value << endl;
+
+    glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &value);
+    cout << "max 3D texture size is " << value << "x" << value << endl;
+
+    glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &value);
+    cout << "max array texture layers are " << value << endl;
+  }
+#endif
 
   GLint result = GL_FALSE;
 
@@ -171,7 +204,7 @@ static void compute() {
   GLuint z = 10;
 
 
-#ifdef TEST_INPUT_OUTPUT
+#ifdef TEST_SSBO_INPUT_OUTPUT
   GLuint ssbos[] = {0, 0};
 #endif
 #ifdef TEST_TEXTURE_INPUT_OUTPUT
@@ -179,6 +212,9 @@ static void compute() {
   GLuint framebuffers[] = {0};
 #endif
   GLuint textures[] = {0, 0};
+#ifdef USE_SAMPLER_TEXTURE
+  GLuint samplers[] = {0};
+#endif
 #endif
 
   // Compile
@@ -215,7 +251,7 @@ static void compute() {
   // Use
   glUseProgram(program);
 
-#ifdef TEST_INPUT_OUTPUT
+#ifdef TEST_SSBO_INPUT_OUTPUT
   {
     // Uniform variable is not input in GLSL.
     GLuint bias = 10;
@@ -273,6 +309,21 @@ static void compute() {
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 #endif
 
+#ifdef USE_SAMPLER_TEXTURE
+    glGenSamplers(1, samplers);
+
+    GLuint sampler = samplers[0];
+#if 1
+    // use Bilinear.
+    glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+#else
+    // use Nearest neighbor.
+    glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+#endif
+#endif
+
     // Create texture object.
 #ifdef GL_VERSION_4_5
     glCreateTextures(GL_TEXTURE_2D, 2, textures);
@@ -301,9 +352,17 @@ static void compute() {
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
     // Input settings
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, color);
+#ifdef USE_SAMPLER_TEXTURE
+    glUniform1i(glGetUniformLocation(program, "inTex"), 1);
+    glBindSampler(1, sampler);
+#else
     glBindImageTexture(1, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);
+#endif
 
     // Output settings
+#ifdef USE_SAMPLER_TEXTURE
+    glBindImageTexture(1, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA8);
+#endif
 #else
     // Input Texture
     texture = textures[0];
@@ -311,12 +370,17 @@ static void compute() {
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height); // cannot use glTexImage2D()..
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, color);
+#ifdef USE_SAMPLER_TEXTURE
+    glUniform1i(glGetUniformLocation(program, "inTex"), 1);
+    glBindSampler(1, sampler);
+#else
     GLuint bindingIndex = 6;
 #if 0
     // Change image binding index.
     glUniform1i(glGetUniformLocation(program, "inTex"), bindingIndex);
 #endif
     glBindImageTexture(bindingIndex, texture, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
+#endif
 
     // Output Texture
     texture = textures[1];
@@ -346,7 +410,7 @@ static void compute() {
   }
 
   // Wait
-#ifdef TEST_INPUT_OUTPUT
+#ifdef TEST_SSBO_INPUT_OUTPUT
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 #endif
 #ifdef TEST_TEXTURE_INPUT_OUTPUT
@@ -354,7 +418,7 @@ static void compute() {
 #endif
 
 END:
-#ifdef TEST_INPUT_OUTPUT
+#ifdef TEST_SSBO_INPUT_OUTPUT
   {
     GLuint ssbo = ssbos[0];
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
@@ -389,7 +453,6 @@ END:
     GLbyte outColor[width * height * 4];
 
 #ifdef USE_FRAMEBUFFER
-    // Cannot use glGetTexImage in OpenGL ES...
     GLuint framebuffer = framebuffers[0];
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, outColor);
@@ -403,6 +466,10 @@ END:
     glBindTexture(GL_TEXTURE_2D, texture);
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, outColor);
     glBindTexture(GL_TEXTURE_2D, 0); // unbind
+#endif
+
+#ifdef USE_SAMPLER_TEXTURE
+    glDeleteSamplers(1, samplers);
 #endif
 
     glDeleteTextures(2, textures);
