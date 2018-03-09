@@ -13,9 +13,99 @@
 
 #include <iostream>
 
+#include <stdexcept>
+#include <vector>
+#include <sstream>
+
 using namespace std;
 
 #define WINDOW_NAME "Test Shader code"
+
+static GLuint createShader(GLenum shaderType, const GLchar** source) {
+  GLuint shader = glCreateShader(shaderType);
+
+  try {
+    GLint result = GL_FALSE;
+    // Compile
+    glShaderSource(shader, 2, source, NULL);
+    glCompileShader(shader);
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+    if (result != GL_TRUE) {
+      GLint length = 0;
+      glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+      vector<GLchar> infoLog(length + 1);
+      infoLog[length] = '\0';
+      glGetShaderInfoLog(shader, length, &length, infoLog.data());
+      throw logic_error(infoLog.data());
+    }
+  } catch (const exception& e) {
+    cerr << "glCompileShader():" << e.what() << endl;
+
+    glDeleteShader(shader);
+    shader = 0;
+  }
+  return shader;
+}
+static GLuint createProgram(GLuint shader) {
+  GLuint program = glCreateProgram();
+
+  try {
+    GLint result = GL_FALSE;
+    // OpenGL 4.6   : Multiple shader objects of the same type may be attached to a single program object.
+    // OpenGL ES 3.2: Multiple shader objects of the same type may not be attached to a single program object.
+    glAttachShader(program, shader);
+
+    // Link
+    glLinkProgram(program);
+    glGetProgramiv(program, GL_LINK_STATUS, &result);
+    if (result != GL_TRUE) {
+      GLint length = 0;
+      glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+      vector<GLchar> infoLog(length + 1);
+      infoLog[length] = '\0';
+      glGetProgramInfoLog(program, length, &length, infoLog.data());
+      throw logic_error(infoLog.data());
+    }
+  } catch (const exception& e) {
+    cerr << "glLinkProgram():" << e.what() << endl;
+
+    glDeleteProgram(program);
+    program = 0;
+  }
+  return program;
+}
+static void checkError(const GLchar* title) {
+  // https://www.khronos.org/opengl/wiki/OpenGL_Error
+  GLenum error = glGetError();
+  if (error != GL_NO_ERROR) {
+    try {
+      ostringstream sout;
+      sout << error;
+      throw logic_error(sout.str());
+    } catch (const exception& e) {
+      cerr << title << ":" << e.what() << endl;
+      throw;
+    }
+  }
+}
+
+// shader code
+const GLchar* vShader[] = {
+  "#version 430\n",
+  "void main() {"
+  "}"
+};
+const GLchar* fShader[] = {
+  "#version 430\n",
+  "void main() {"
+  "}"
+};
+const GLchar* cShader[] = {
+  "#version 430\n",
+  "layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;"
+  "void main() {"
+  "}"
+};
 
 static void init(void) {
 #ifdef USE_GLEW
@@ -33,9 +123,6 @@ static void reshape(int width, int height) {
 
 static void idle(void) {
   glutPostRedisplay();
-}
-
-static void timer(int value) {
 }
 
 int main(int argc, char* argv[])

@@ -231,8 +231,6 @@ static void compute() {
     goto END;
   }
 
-  // OpenGL 4.6   : Multiple shader objects of the same type may be attached to a single program object.
-  // OpenGL ES 3.2: Multiple shader objects of the same type may not be attached to a single program object.
   glAttachShader(program, shader);
 
   // Link
@@ -316,12 +314,14 @@ static void compute() {
 #if 1
     // use Bilinear.
     glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // affect.
 #else
     // use Nearest neighbor.
     glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 #endif
+    glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 #endif
 
     // Create texture object.
@@ -349,6 +349,7 @@ static void compute() {
     texture = textures[0];
     glActiveTexture(GL_TEXTURE0 + 1);
     glBindTexture(GL_TEXTURE_2D, texture);
+    // Once a texture is specified with this command, the format and dimensions of all levels become immutable unless it is a proxy texture.
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
     // Input settings
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, color);
