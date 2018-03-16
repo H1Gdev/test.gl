@@ -102,8 +102,13 @@ const GLchar* fShader[] = {
 };
 const GLchar* cShader[] = {
   "#version 430\n",
-  "layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;"
+  "layout(local_size_x = 8, local_size_y = 8) in;"
+  "uniform sampler2D inTex;"
+  "layout(binding = 0, rgba8) writeonly uniform image2D outTex;"
   "void main() {"
+  "  ivec2 pos = ivec2(gl_GlobalInvocationID.xy);"
+  "  vec2 normalizedPos = (vec2(pos) + 0.5) / vec2(imageSize(outTex));"
+  "  imageStore(outTex, pos, texture(inTex, normalizedPos));"
   "}"
 };
 
