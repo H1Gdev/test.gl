@@ -101,6 +101,7 @@ const GLchar* fShader[] = {
   "}"
 };
 const GLchar* cShader[] = {
+  // Scale up/down the same aspect ratio textures.
   "#version 430\n",
   "layout(local_size_x = 8, local_size_y = 8) in;"
   "uniform sampler2D inTex;"
