@@ -46,9 +46,9 @@ using namespace std;
 #define TEST_TEXTURE_INPUT_OUTPUT
 
 #ifdef TEST_TEXTURE_INPUT_OUTPUT
-#define USE_COMMON_TEXTURE   // Use the same texture object and image binding index.
-#define USE_SAMPLER_TEXTURE  // Use sampler for input texture.
-//#define USE_FRAMEBUFFER    // Cannot use glGetTexImage() in OpenGL ES, so...
+#define USE_COMMON_TEXTURE         // Use the same texture object and image binding index.
+#define USE_SAMPLER_TEXTURE        // Use sampler for input texture.
+//#define USE_FRAMEBUFFER_TO_READ  // Cannot use glGetTexImage() in OpenGL ES, so...
 #endif
 
 static void init(void) {
@@ -208,12 +208,12 @@ static void compute() {
   GLuint ssbos[] = {0, 0};
 #endif
 #ifdef TEST_TEXTURE_INPUT_OUTPUT
-#ifdef USE_FRAMEBUFFER
-  GLuint framebuffers[] = {0};
-#endif
   GLuint textures[] = {0, 0};
 #ifdef USE_SAMPLER_TEXTURE
   GLuint samplers[] = {0};
+#endif
+#ifdef USE_FRAMEBUFFER_TO_READ
+  GLuint framebuffers[] = {0};
 #endif
 #endif
 
@@ -300,13 +300,6 @@ static void compute() {
 #endif
 #ifdef TEST_TEXTURE_INPUT_OUTPUT
   {
-#ifdef USE_FRAMEBUFFER
-    // Create framebuffer object.
-    glGenFramebuffers(1, framebuffers);
-    GLuint framebuffer = framebuffers[0];
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-#endif
-
 #ifdef USE_SAMPLER_TEXTURE
     glGenSamplers(1, samplers);
 
@@ -390,9 +383,6 @@ static void compute() {
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height); // cannot use glTexImage2D()..
     glBindImageTexture(7, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
 #endif
-#ifdef USE_FRAMEBUFFER
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
-#endif
 
     x = width;
     y = height;
@@ -452,18 +442,25 @@ END:
     const GLsizei width = 2;
     const GLsizei height = 2;
     GLbyte outColor[width * height * 4];
-
-#ifdef USE_FRAMEBUFFER
-    GLuint framebuffer = framebuffers[0];
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, outColor);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0); // unbind
-#else
 #ifdef USE_COMMON_TEXTURE
     GLuint texture = textures[0];
 #else
     GLuint texture = textures[1];
 #endif
+
+#ifdef USE_FRAMEBUFFER_TO_READ
+    // Create framebuffer object.
+    glGenFramebuffers(1, framebuffers);
+
+    GLuint framebuffer = framebuffers[0];
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, outColor);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); // unbind
+
+    glDeleteFramebuffers(1, framebuffers);
+#else
     glBindTexture(GL_TEXTURE_2D, texture);
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, outColor);
     glBindTexture(GL_TEXTURE_2D, 0); // unbind
@@ -474,10 +471,6 @@ END:
 #endif
 
     glDeleteTextures(2, textures);
-
-#ifdef USE_FRAMEBUFFER
-    glDeleteFramebuffers(1, framebuffers);
-#endif
   }
 #endif
 
