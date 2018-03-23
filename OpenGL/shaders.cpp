@@ -46,15 +46,9 @@ static GLuint createShader(GLenum shaderType, const GLchar** source) {
   }
   return shader;
 }
-static GLuint createProgram(GLuint shader) {
-  GLuint program = glCreateProgram();
-
+static void linkProgram(GLuint program) {
   try {
     GLint result = GL_FALSE;
-    // OpenGL 4.6   : Multiple shader objects of the same type may be attached to a single program object.
-    // OpenGL ES 3.2: Multiple shader objects of the same type may not be attached to a single program object.
-    glAttachShader(program, shader);
-
     // Link
     glLinkProgram(program);
     glGetProgramiv(program, GL_LINK_STATUS, &result);
@@ -68,11 +62,8 @@ static GLuint createProgram(GLuint shader) {
     }
   } catch (const exception& e) {
     cerr << "glLinkProgram():" << e.what() << endl;
-
-    glDeleteProgram(program);
-    program = 0;
+    throw;
   }
-  return program;
 }
 static void checkError(const GLchar* title) {
   // https://www.khronos.org/opengl/wiki/OpenGL_Error
@@ -92,12 +83,16 @@ static void checkError(const GLchar* title) {
 // shader code
 const GLchar* vShader[] = {
   "#version 430\n",
+  "in vec3 position;"
+  "uniform mat4 mvpMatrix;" // MVP(Model-View-Projection)
   "void main() {"
+  "  gl_Position = mvpMatrix * vec4(position, 1.0);"
   "}"
 };
 const GLchar* fShader[] = {
   "#version 430\n",
   "void main() {"
+  "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
   "}"
 };
 const GLchar* cShader[] = {
@@ -113,18 +108,83 @@ const GLchar* cShader[] = {
   "}"
 };
 
+static GLuint rProgram = 0;
+static GLuint cProgram = 0;
+
 static void init(void) {
 #ifdef USE_GLEW
   if (glewInit() != GLEW_OK) {
     cerr << "Failed to initialize GLEW..." << endl;
   }
 #endif
+
+  // Programs may not contain both a compute and a non-compute shader.
+  rProgram = glCreateProgram();
+  cProgram = glCreateProgram();
+
+  GLuint shader;
+  // Vertex Shader
+  shader = createShader(GL_VERTEX_SHADER, vShader);
+  // OpenGL 4.6   : Multiple shader objects of the same type may be attached to a single program object.
+  // OpenGL ES 3.2: Multiple shader objects of the same type may not be attached to a single program object.
+  glAttachShader(rProgram, shader);
+
+  // Fragment Shader
+  shader = createShader(GL_FRAGMENT_SHADER, fShader);
+  glAttachShader(rProgram, shader);
+
+  // Compute Shader
+  shader = createShader(GL_COMPUTE_SHADER, cShader);
+  glAttachShader(cProgram, shader);
+
+  linkProgram(rProgram);
+  linkProgram(cProgram);
+}
+
+static void term(void) {
+  if (cProgram != 0) {
+    GLsizei count = 0;
+    glGetProgramiv(cProgram, GL_ATTACHED_SHADERS, &count);
+    vector<GLuint> shaders(count);
+    glGetAttachedShaders(cProgram, count, &count, shaders.data());
+    for (GLint i = 0; i < count; ++i) {
+      GLuint shader = shaders[i];
+
+      glDetachShader(cProgram, shader);
+      glDeleteShader(shader);
+    }
+
+    glDeleteProgram(cProgram);
+    cProgram = 0;
+  }
+  if (rProgram != 0) {
+    GLsizei count = 0;
+    glGetProgramiv(rProgram, GL_ATTACHED_SHADERS, &count);
+    vector<GLuint> shaders(count);
+    glGetAttachedShaders(rProgram, count, &count, shaders.data());
+    for (GLint i = 0; i < count; ++i) {
+      GLuint shader = shaders[i];
+
+      glDetachShader(rProgram, shader);
+      glDeleteShader(shader);
+    }
+
+    glDeleteProgram(rProgram);
+    rProgram = 0;
+  }
 }
 
 static void display(void) {
+  // Compute
+  glUseProgram(cProgram);
+  glDispatchCompute(1, 1, 1);
+
+  // Render
+  glUseProgram(rProgram);
 }
 
 static void reshape(int width, int height) {
+  glutReshapeWindow(width, height);
 }
 
 static void idle(void) {
@@ -148,6 +208,9 @@ int main(int argc, char* argv[])
   glutIdleFunc(idle);
 
   glutMainLoop();
+
+  // This function will be never called.
+  term();
 
   return 0;
 }

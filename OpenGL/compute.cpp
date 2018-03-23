@@ -313,6 +313,10 @@ static void compute() {
     glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 #endif
+    //         (Position)   -0.50  -0.25    0.00  1.00    1.25  1.50
+    // GL_REPEAT             0.50   0.75    0.00  1.00    0.25  0.50
+    // GL_MIRRORED_REPEAT    0.50   0.25    0.00  1.00    0.75  0.50
+    // GL_CLAMP_TO_EDGE      0.00   0.00    0.00  1.00    1.00  1.00
     glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 #endif
