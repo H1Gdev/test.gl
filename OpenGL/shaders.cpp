@@ -21,13 +21,10 @@ using namespace std;
 
 #define WINDOW_NAME "Test Shader code"
 
-static GLuint createShader(GLenum shaderType, const GLchar** source) {
-  GLuint shader = glCreateShader(shaderType);
-
+static void compileShader(GLuint shader) {
   try {
     GLint result = GL_FALSE;
     // Compile
-    glShaderSource(shader, 2, source, NULL);
     glCompileShader(shader);
     glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
     if (result != GL_TRUE) {
@@ -40,11 +37,8 @@ static GLuint createShader(GLenum shaderType, const GLchar** source) {
     }
   } catch (const exception& e) {
     cerr << "glCompileShader():" << e.what() << endl;
-
-    glDeleteShader(shader);
-    shader = 0;
+    throw;
   }
-  return shader;
 }
 static void linkProgram(GLuint program) {
   try {
@@ -77,6 +71,34 @@ static void checkError(const GLchar* title) {
       cerr << title << ":" << e.what() << endl;
       throw;
     }
+  }
+}
+
+static GLuint createShader(GLenum shaderType, const GLchar** source) {
+  GLuint shader = glCreateShader(shaderType);
+  try {
+    glShaderSource(shader, 2, source, NULL);
+    compileShader(shader);
+  } catch (...) {
+    glDeleteShader(shader);
+    shader = 0;
+  }
+  return shader;
+}
+static void terminateProgram(GLuint program, GLboolean shaders = GL_TRUE) {
+  if (glIsProgram(program) == GL_TRUE) {
+    GLsizei count = 0;
+    glGetProgramiv(program, GL_ATTACHED_SHADERS, &count);
+    vector<GLuint> attachedShaders(count);
+    glGetAttachedShaders(program, count, &count, attachedShaders.data());
+    for (GLint i = 0; i < count; ++i) {
+      GLuint shader = attachedShaders[i];
+      glDetachShader(program, shader);
+      if (shaders == GL_TRUE) {
+        glDeleteShader(shader);
+      }
+    }
+    glDeleteProgram(program);
   }
 }
 
@@ -142,36 +164,10 @@ static void init(void) {
 }
 
 static void term(void) {
-  if (cProgram != 0) {
-    GLsizei count = 0;
-    glGetProgramiv(cProgram, GL_ATTACHED_SHADERS, &count);
-    vector<GLuint> shaders(count);
-    glGetAttachedShaders(cProgram, count, &count, shaders.data());
-    for (GLint i = 0; i < count; ++i) {
-      GLuint shader = shaders[i];
-
-      glDetachShader(cProgram, shader);
-      glDeleteShader(shader);
-    }
-
-    glDeleteProgram(cProgram);
-    cProgram = 0;
-  }
-  if (rProgram != 0) {
-    GLsizei count = 0;
-    glGetProgramiv(rProgram, GL_ATTACHED_SHADERS, &count);
-    vector<GLuint> shaders(count);
-    glGetAttachedShaders(rProgram, count, &count, shaders.data());
-    for (GLint i = 0; i < count; ++i) {
-      GLuint shader = shaders[i];
-
-      glDetachShader(rProgram, shader);
-      glDeleteShader(shader);
-    }
-
-    glDeleteProgram(rProgram);
-    rProgram = 0;
-  }
+  terminateProgram(cProgram);
+  cProgram = 0;
+  terminateProgram(rProgram);
+  rProgram = 0;
 }
 
 static void display(void) {
