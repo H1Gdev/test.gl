@@ -129,6 +129,26 @@ const GLchar* cShader[] = {
   "  imageStore(outTex, pos, texture(inTex, normalizedPos));"
   "}"
 };
+#if 0
+const GLchar* cShader[] = {
+  // Convert from YUV420SP to RGB.
+  "#version 430\n",
+  "layout(local_size_x = 8, local_size_y = 8) in;"
+  "uniform sampler2D inTexY;"
+  "uniform sampler2D inTexUV;"
+  "layout(binding = 0, rgba8) writeonly uniform image2D outTex;"
+  "void main() {"
+  "  ivec2 pos = ivec2(gl_GlobalInvocationID.xy);"
+  "  float y = texture(inTexY, (vec2(pos) + 0.5) / vec2(textureSize(inTexY, 0))).r;"
+  "  vec2 uv = texture(inTexUV, (vec2(pos / 2) + 0.5) / vec2(textureSize(inTexUV, 0))).rg - 0.5;"
+  "  float r = y                  + (1.402 * uv.g);"
+  "  float g = y - (0.344 * uv.r) - (0.714 * uv.g);"
+  "  float b = y + (1.772 * uv.r);"
+  "  vec4 color = max(min(vec4(r, g, b, 1.0), 1.0), 0.0);"
+  "  imageStore(outTex, pos, color);"
+  "}"
+};
+#endif
 
 static GLuint rProgram = 0;
 static GLuint cProgram = 0;
