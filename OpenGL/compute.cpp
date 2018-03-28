@@ -218,7 +218,7 @@ static void compute() {
 #endif
 
   // Compile
-  glShaderSource(shader, 2, source, NULL); // Set shader code
+  glShaderSource(shader, 2, source, nullptr); // Set shader code
   glCompileShader(shader);
   glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
   if (result != GL_TRUE) {

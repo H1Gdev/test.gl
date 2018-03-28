@@ -24,8 +24,6 @@ WebGL 1.0	webgl	OpenGL ES 2.0	GLSL ES 1.00
 Khronos Group
 https://www.khronos.org/
 
-OpenGL Architecture Review Board(ARB)
-
 
 Vertex			頂点
 Primitive		頂点により描画される図形
@@ -198,6 +196,14 @@ Sampler
 https://www.khronos.org/opengl/wiki/Sampler_(GLSL)
 Image
 https://www.khronos.org/opengl/wiki/Image_Load_Store
+
+
+OpenGL Extension
+https://www.khronos.org/opengl/wiki/OpenGL_Extension
+ARB(OpenGL Architecture Review Board)
+OES(OpenGL ES Extension)
+
+https://www.khronos.org/registry/OpenGL/extensions/
 
 
 Reference Page

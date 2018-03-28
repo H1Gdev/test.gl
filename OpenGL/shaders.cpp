@@ -77,7 +77,7 @@ static void checkError(const GLchar* title) {
 static GLuint createShader(GLenum shaderType, const GLchar** source) {
   GLuint shader = glCreateShader(shaderType);
   try {
-    glShaderSource(shader, 2, source, NULL);
+    glShaderSource(shader, 2, source, nullptr);
     compileShader(shader);
   } catch (...) {
     glDeleteShader(shader);
@@ -153,6 +153,8 @@ const GLchar* cShader[] = {
 static GLuint rProgram = 0;
 static GLuint cProgram = 0;
 
+static GLuint textures[] = {0, 0, 0};
+
 static void init(void) {
 #ifdef USE_GLEW
   if (glewInit() != GLEW_OK) {
@@ -181,9 +183,24 @@ static void init(void) {
 
   linkProgram(rProgram);
   linkProgram(cProgram);
+
+  // Textures
+  {
+    const GLsizei n = sizeof(textures) / sizeof(GLuint);
+#ifdef GL_VERSION_4_5
+    glCreateTextures(GL_TEXTURE_2D, n, textures);
+#else
+    glGenTextures(n, textures);
+#endif
+  }
 }
 
 static void term(void) {
+  {
+    const GLsizei n = sizeof(textures) / sizeof(GLuint);
+    glDeleteTextures(n, textures);
+  }
+
   terminateProgram(cProgram);
   cProgram = 0;
   terminateProgram(rProgram);
@@ -193,10 +210,21 @@ static void term(void) {
 static void display(void) {
   // Compute
   glUseProgram(cProgram);
-  glDispatchCompute(1, 1, 1);
+  {
+    const GLsizei width = 8;
+    const GLsizei height = 8;
+
+    const GLuint x = ((GLuint)width) >> 3;
+    const GLuint y = ((GLuint)height) >> 3;
+    const GLuint z = 1;
+    glDispatchCompute(x, y, z);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+  }
 
   // Render
   glUseProgram(rProgram);
+  {
+  }
 }
 
 static void reshape(int width, int height) {
