@@ -1,5 +1,6 @@
 package com.example.h1gdev.androidapp;
 
+import android.content.res.AssetManager;
 import android.opengl.GLSurfaceView;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
         // Example of a call to a native method
         TextView tv = findViewById(R.id.sample_text);
         tv.setText(stringFromJNI());
+        tv.setText(stringFromAAsset(getAssets()));
     }
 
     @Override
@@ -69,4 +71,5 @@ public class MainActivity extends AppCompatActivity {
      * which is packaged with this application.
      */
     public native String stringFromJNI();
+    public native String stringFromAAsset(AssetManager assetManager);
 }

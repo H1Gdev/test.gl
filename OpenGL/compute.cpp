@@ -113,10 +113,10 @@ const GLchar* source[] = {
   "}"
 #endif
 #ifdef TEST_TEXTURE_INPUT_OUTPUT
-  "#version 430\n",
+  "#version 430\n"
   // https://stackoverflow.com/questions/1914115/converting-color-value-from-float-0-1-to-byte-0-255
   "#define COLOR_F2B(f) (max(0, min(255, int(floor((f) * 256.0)))))\n"
-  "#define COLOR_B2F(b) (float(b) / 255.0)\n"
+  "#define COLOR_B2F(b) (float(b) / 255.0)\n",
   "layout(local_size_x = 1, local_size_y = 1) in;"
 #ifdef USE_COMMON_TEXTURE
 #ifdef USE_SAMPLER_TEXTURE
