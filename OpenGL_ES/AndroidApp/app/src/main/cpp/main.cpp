@@ -2,6 +2,8 @@
 // EGL
 // https://www.khronos.org/egl
 #include <EGL/egl.h>
+// EGL Extension
+#include <EGL/eglext.h>
 
 #include <android_native_app_glue.h>
 
