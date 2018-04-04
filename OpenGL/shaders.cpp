@@ -137,15 +137,21 @@ static const GLchar* cShader[] = {
   "uniform sampler2D inTexY;"
   "uniform sampler2D inTexUV;"
   "layout(binding = 0, rgba8) writeonly uniform image2D outTex;"
+  // ITU-R BT.601
+  "const mat3 yuv2rgb = mat3("
+  // R       G      B
+  "  1.0,    1.0,   1.0,"   // Y
+  "  0.0,   -0.344, 1.772," // U
+  "  1.402, -0.714, 0.0"    // V
+  ");"
+  "const vec3 yuv_sub = vec3(0.0, 0.5, 0.5);"
   "void main() {"
   "  ivec2 pos = ivec2(gl_GlobalInvocationID.xy);"
   "  float y = texture(inTexY, (vec2(pos) + 0.5) / vec2(textureSize(inTexY, 0))).r;"
-  "  vec2 uv = texture(inTexUV, (vec2(pos / 2) + 0.5) / vec2(textureSize(inTexUV, 0))).rg - 0.5;"
-  "  float r = y                  + (1.402 * uv.g);"
-  "  float g = y - (0.344 * uv.r) - (0.714 * uv.g);"
-  "  float b = y + (1.772 * uv.r);"
-  "  vec4 color = clamp(vec4(r, g, b, 1.0), 0.0, 1.0);"
-  "  imageStore(outTex, pos, color);"
+  "  vec2 uv = texture(inTexUV, (vec2(pos / 2) + 0.5) / vec2(textureSize(inTexUV, 0))).rg;"
+  "  vec3 yuv = vec3(y, uv);"
+  "  vec3 rgb = clamp(yuv2rgb * (yuv - yuv_sub), 0.0, 1.0);"
+  "  imageStore(outTex, pos, vec4(rgb, 1.0));"
   "}"
 };
 #endif
