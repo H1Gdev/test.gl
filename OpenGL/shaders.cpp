@@ -103,7 +103,7 @@ static void terminateProgram(GLuint program, GLboolean shaders = GL_TRUE) {
 }
 
 // shader code
-const GLchar* vShader[] = {
+static const GLchar* vShader[] = {
   "#version 430\n",
   "in vec3 position;"
   "uniform mat4 mvpMatrix;" // MVP(Model-View-Projection)
@@ -111,13 +111,13 @@ const GLchar* vShader[] = {
   "  gl_Position = mvpMatrix * vec4(position, 1.0);"
   "}"
 };
-const GLchar* fShader[] = {
+static const GLchar* fShader[] = {
   "#version 430\n",
   "void main() {"
   "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
   "}"
 };
-const GLchar* cShader[] = {
+static const GLchar* cShader[] = {
   // Scale up/down the same aspect ratio textures.
   "#version 430\n",
   "layout(local_size_x = 8, local_size_y = 8) in;"
@@ -130,7 +130,7 @@ const GLchar* cShader[] = {
   "}"
 };
 #if 0
-const GLchar* cShader[] = {
+static const GLchar* cShader[] = {
   // Convert from YUV420SP to RGB.
   "#version 430\n",
   "layout(local_size_x = 8, local_size_y = 8) in;"
@@ -144,7 +144,7 @@ const GLchar* cShader[] = {
   "  float r = y                  + (1.402 * uv.g);"
   "  float g = y - (0.344 * uv.r) - (0.714 * uv.g);"
   "  float b = y + (1.772 * uv.r);"
-  "  vec4 color = max(min(vec4(r, g, b, 1.0), 1.0), 0.0);"
+  "  vec4 color = clamp(vec4(r, g, b, 1.0), 0.0, 1.0);"
   "  imageStore(outTex, pos, color);"
   "}"
 };
