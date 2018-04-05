@@ -113,8 +113,15 @@ static const GLchar* vShader[] = {
 };
 static const GLchar* fShader[] = {
   "#version 430\n",
+  // https://www.khronos.org/opengl/wiki/Fragment_Shader#Output_buffers
+  "out vec4 color0;" // Default color number is 0.
   "void main() {"
+#if 0
+  // gl_FragColor and gl_FragData[n] are deprecated.
   "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
+  "  gl_FragData[0] = vec4(1.0, 1.0, 1.0, 1.0);"
+#endif
+  "  color0 = vec4(1.0, 1.0, 1.0, 1.0);"
   "}"
 };
 static const GLchar* cShader[] = {
@@ -182,6 +189,8 @@ static void init(void) {
   // Fragment Shader
   shader = createShader(GL_FRAGMENT_SHADER, fShader);
   glAttachShader(rProgram, shader);
+  // Before linking a program that includes a fragment shader, the user may tell OpenGL to assign a particular output variable to a particular fragment color.
+  glBindFragDataLocation(rProgram, 0, "color0");
 
   // Compute Shader
   shader = createShader(GL_COMPUTE_SHADER, cShader);
