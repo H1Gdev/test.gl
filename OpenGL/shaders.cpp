@@ -161,6 +161,16 @@ static const GLchar* cShader[] = {
   "  imageStore(outTex, pos, vec4(rgb, 1.0));"
   "}"
 };
+#if 0
+glPixelStorei(GL_PACK_ALIGNMENT, 1);   // from GPU to CPU.
+glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // from CPU to GPU.
+// inTexY
+glTexStorage2D(GL_TEXTURE_2D, 1, GL_R8, width, height);
+glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RED, GL_UNSIGNED_BYTE, colorY);
+// inTexUV
+glTexStorage2D(GL_TEXTURE_2D, 1, GL_RG8, width >> 1, height >> 1);
+glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width >> 1, height >> 1, GL_RG, GL_UNSIGNED_BYTE, colorUV);
+#endif
 #endif
 
 static GLuint rProgram = 0;
@@ -226,6 +236,8 @@ static void display(void) {
   // Compute
   glUseProgram(cProgram);
   {
+    const GLuint program = cProgram;
+
     const GLsizei width = 8;
     const GLsizei height = 8;
 
@@ -234,11 +246,16 @@ static void display(void) {
     const GLuint z = 1;
     glDispatchCompute(x, y, z);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+    checkError("Compute");
   }
 
   // Render
   glUseProgram(rProgram);
   {
+    const GLuint program = rProgram;
+
+    checkError("Render");
   }
 }
 
