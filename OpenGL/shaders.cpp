@@ -161,7 +161,7 @@ static const GLchar* cShader[] = {
   "  imageStore(outTex, pos, vec4(rgb, 1.0));"
   "}"
 };
-#if 0
+/*
 glPixelStorei(GL_PACK_ALIGNMENT, 1);   // from GPU to CPU.
 glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // from CPU to GPU.
 // inTexY
@@ -170,7 +170,40 @@ glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RED, GL_UNSIGNED_BYTE,
 // inTexUV
 glTexStorage2D(GL_TEXTURE_2D, 1, GL_RG8, width >> 1, height >> 1);
 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width >> 1, height >> 1, GL_RG, GL_UNSIGNED_BYTE, colorUV);
+*/
 #endif
+#if 0
+static const GLchar* cShader[] = {
+  // Apply Gaussian blur.
+  // http://rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
+  "#version 430\n",
+  "layout(local_size_x = 8, local_size_y = 8) in;"
+  "uniform sampler2D inTex;"
+  "layout(binding = 0, rgba8) writeonly uniform image2D outTex;"
+  "void main() {"
+  "  ivec2 pos = ivec2(gl_GlobalInvocationID.xy);"
+  "  vec2 normalizedPos = (vec2(pos) + 0.5) / vec2(textureSize(inTex, 0));"
+  "  vec4 texel = vec4(0.0);"
+  // http://dev.theomader.com/gaussian-kernel-calculator/
+  // Sigma: 1.0
+  // Kernel Size: 3
+  // Two dimensional Kernel
+  "  texel += textureOffset(inTex, normalizedPos, ivec2(-1, -1)) * 0.077847;"
+  "  texel += textureOffset(inTex, normalizedPos, ivec2( 0, -1)) * 0.123317;"
+  "  texel += textureOffset(inTex, normalizedPos, ivec2( 1, -1)) * 0.077847;"
+  "  texel += textureOffset(inTex, normalizedPos, ivec2(-1,  0)) * 0.123317;"
+  "  texel += texture(inTex, normalizedPos)                      * 0.195346;"
+  "  texel += textureOffset(inTex, normalizedPos, ivec2( 1,  0)) * 0.123317;"
+  "  texel += textureOffset(inTex, normalizedPos, ivec2(-1,  1)) * 0.077847;"
+  "  texel += textureOffset(inTex, normalizedPos, ivec2( 0,  1)) * 0.123317;"
+  "  texel += textureOffset(inTex, normalizedPos, ivec2( 1,  1)) * 0.077847;"
+#if 0
+  // logically unnecessary.
+  "  texel = min(texel, 1.0);"
+#endif
+  "  imageStore(outTex, pos, texel);"
+  "}"
+};
 #endif
 
 static GLuint rProgram = 0;

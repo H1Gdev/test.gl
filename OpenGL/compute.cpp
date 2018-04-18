@@ -136,11 +136,16 @@ static const GLchar* source[] = {
   "void main() {"
   "  ivec2 pos = ivec2(gl_GlobalInvocationID.xy);"
 #ifdef USE_SAMPLER_TEXTURE
+#if 1
   // https://stackoverflow.com/questions/40574677/how-to-normalize-image-coordinates-for-texture-space-in-opengl
   "  ivec2 size = textureSize(inTex, 0);"
   "  vec2 posCenter = vec2(pos) + 0.5;" // center of texel
   "  vec2 posNormalized = posCenter / vec2(size);" // = vec2(posCenter.x / float(size.x), posCenter.y / float(size.y));
   "  vec4 texel = texture(inTex, posNormalized);"
+#else
+  // Like imageLoad.(No interpolation.)
+  "  vec4 texel = texelFetch(inTex, pos, 0);"
+#endif
 #else
   "  vec4 texel = imageLoad(inTex, pos);"
 #endif
