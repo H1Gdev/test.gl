@@ -195,6 +195,11 @@ https://www.khronos.org/opengl/wiki/Built-in_Variable_(GLSL)
 
 Sampler
 https://www.khronos.org/opengl/wiki/Sampler_(GLSL)
+Texture gather accesses
+-> 4[texel]をcomponent(0:r, 1:g, 2:b, 3:a)単位で集める
+   w, z
+   x, y
+
 Image
 https://www.khronos.org/opengl/wiki/Image_Load_Store
 
