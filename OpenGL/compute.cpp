@@ -409,7 +409,8 @@ static void compute() {
 #endif
   }
 
-  // Wait
+  // Barrier
+  // Do not wait immediately.
 #ifdef TEST_SSBO_INPUT_OUTPUT
   glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 #endif

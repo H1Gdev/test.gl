@@ -123,8 +123,10 @@ static void display(void) {
   // Z軸の負の向き
 
 #if 1
+  // Send all commands.
   glFlush();
 #else
+  // Send all commands and Wait until all commands is complete.
   glFinish();
 #endif
 }
