@@ -108,7 +108,7 @@ GLSL binding
 Sampler
 -> locationにTexture Image Unit(iのみ)を設定して紐付ける
 Image
--> glBindImageTexture()で紐付ける
+-> glBindImageTexture()でTexture Objectと紐付ける
 
 
 Rendering Pipeline
