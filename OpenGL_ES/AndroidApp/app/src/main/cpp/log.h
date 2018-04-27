@@ -19,7 +19,7 @@
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 #define BEGIN_N(n) std::chrono::high_resolution_clock::time_point b_##n = std::chrono::high_resolution_clock::now()
-#define END_N(n, m) std::chrono::high_resolution_clock::time_point e_##n = std::chrono::high_resolution_clock::now(); std::chrono::microseconds d_##n = std::chrono::duration_cast<std::chrono::microseconds>(e_##n - b_##n); LOGI("%s: %lld[us]", m, d_##n.count());
+#define END_N(n, m) std::chrono::high_resolution_clock::time_point e_##n = std::chrono::high_resolution_clock::now(); std::chrono::microseconds d_##n = std::chrono::duration_cast<std::chrono::microseconds>(e_##n - b_##n); LOGI("%s: %lld[us]", m, d_##n.count())
 #else // LOG_MSG_FLAG
 #define LOGV(...)
 #define LOGD(...)
