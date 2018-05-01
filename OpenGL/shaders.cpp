@@ -178,25 +178,26 @@ static const GLchar* cShader[] = {
   // http://rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
   "#version 430\n",
   "layout(local_size_x = 8, local_size_y = 8) in;"
-  "uniform sampler2D inTex;"
-  "layout(binding = 0, rgba8) writeonly uniform image2D outTex;"
+  "layout(binding = 0, rgba8) readonly uniform image2D inTex;"
+  "layout(binding = 1, rgba8) writeonly uniform image2D outTex;"
+  "const ivec2 min = ivec2(0);"
   "void main() {"
   "  ivec2 pos = ivec2(gl_GlobalInvocationID.xy);"
-  "  vec2 normalizedPos = (vec2(pos) + 0.5) / vec2(textureSize(inTex, 0));"
+  "  ivec2 max = imageSize(inTex) - 1;"
   "  vec4 texel = vec4(0.0);"
   // http://dev.theomader.com/gaussian-kernel-calculator/
   // Sigma: 1.0
   // Kernel Size: 3
   // Two dimensional Kernel
-  "  texel += textureOffset(inTex, normalizedPos, ivec2(-1, -1)) * 0.077847;"
-  "  texel += textureOffset(inTex, normalizedPos, ivec2( 0, -1)) * 0.123317;"
-  "  texel += textureOffset(inTex, normalizedPos, ivec2( 1, -1)) * 0.077847;"
-  "  texel += textureOffset(inTex, normalizedPos, ivec2(-1,  0)) * 0.123317;"
-  "  texel += texture(inTex, normalizedPos)                      * 0.195346;"
-  "  texel += textureOffset(inTex, normalizedPos, ivec2( 1,  0)) * 0.123317;"
-  "  texel += textureOffset(inTex, normalizedPos, ivec2(-1,  1)) * 0.077847;"
-  "  texel += textureOffset(inTex, normalizedPos, ivec2( 0,  1)) * 0.123317;"
-  "  texel += textureOffset(inTex, normalizedPos, ivec2( 1,  1)) * 0.077847;"
+  "  texel += imageLoad(inTex, clamp(pos + ivec2(-1, -1), min, max)) * 0.077847;"
+  "  texel += imageLoad(inTex, clamp(pos + ivec2( 0, -1), min, max)) * 0.123317;"
+  "  texel += imageLoad(inTex, clamp(pos + ivec2( 1, -1), min, max)) * 0.077847;"
+  "  texel += imageLoad(inTex, clamp(pos + ivec2(-1,  0), min, max)) * 0.123317;"
+  "  texel += imageLoad(inTex, pos)                                  * 0.195346;"
+  "  texel += imageLoad(inTex, clamp(pos + ivec2( 1,  0), min, max)) * 0.123317;"
+  "  texel += imageLoad(inTex, clamp(pos + ivec2(-1,  1), min, max)) * 0.077847;"
+  "  texel += imageLoad(inTex, clamp(pos + ivec2( 0,  1), min, max)) * 0.123317;"
+  "  texel += imageLoad(inTex, clamp(pos + ivec2( 1,  1), min, max)) * 0.077847;"
 #if 0
   // logically unnecessary.
   "  texel = min(texel, 1.0);"
