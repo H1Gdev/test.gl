@@ -154,9 +154,16 @@ static const GLchar* cShader[] = {
   "const vec3 yuv_sub = vec3(0.0, 0.5, 0.5);"
   "void main() {"
   "  ivec2 pos = ivec2(gl_GlobalInvocationID.xy);"
+#if 0
   "  float y = texture(inTexY, (vec2(pos) + 0.5) / vec2(textureSize(inTexY, 0))).r;"
   "  vec2 uv = texture(inTexUV, (vec2(pos / 2) + 0.5) / vec2(textureSize(inTexUV, 0))).rg;"
   "  vec3 yuv = vec3(y, uv);"
+#else
+  // Equivalent
+  "  vec3 yuv = vec3(0.0);"
+  "  yuv.r = texture(inTexY, (vec2(pos) + 0.5) / vec2(textureSize(inTexY, 0))).r;"
+  "  yuv.gb = texture(inTexUV, (vec2(pos / 2) + 0.5) / vec2(textureSize(inTexUV, 0))).rg;"
+#endif
   "  vec3 rgb = clamp(yuv2rgb * (yuv - yuv_sub), 0.0, 1.0);"
   "  imageStore(outTex, pos, vec4(rgb, 1.0));"
   "}"
