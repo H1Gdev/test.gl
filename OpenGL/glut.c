@@ -10,9 +10,14 @@
 #define WINDOW_NAME "Test GLUT"
 
 static void display(void) {
+  // Called by glutPostRedisplay().
 }
 
 static void reshape(int width, int height) {
+  // Called by glutReshapeWindow().
+
+  // Same as default callback.
+  glViewport(0, 0, width, height);
 }
 
 static void idle(void) {
@@ -24,8 +29,7 @@ static void idle(void) {
 static void timer(int value) {
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
   // Initialization
   glutInit(&argc, argv);
   glutInitWindowPosition(100, 50);

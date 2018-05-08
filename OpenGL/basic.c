@@ -131,11 +131,7 @@ static void display(void) {
 #endif
 }
 
-static void reshape(int width, int height) {
-}
-
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
   glutInit(&argc, argv);
   glutInitWindowPosition(100, 50);
   glutInitWindowSize(200, 100);
@@ -146,7 +142,6 @@ int main(int argc, char* argv[])
   init();
 
   glutDisplayFunc(display);
-  glutReshapeFunc(reshape);
 
   glutMainLoop();
 

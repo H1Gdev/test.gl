@@ -62,9 +62,6 @@ static void init(void) {
 static void display(void) {
 }
 
-static void reshape(int width, int height) {
-}
-
 // shader code
 static const GLchar* source[] = {
 #ifdef MINIMUM_SHADER_CODE
@@ -490,8 +487,7 @@ END:
   glDeleteProgram(program);
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
   glutInit(&argc, argv);
   glutInitWindowPosition(100, 50);
   glutInitWindowSize(200, 100);
@@ -502,7 +498,6 @@ int main(int argc, char* argv[])
   init();
 
   glutDisplayFunc(display);
-  glutReshapeFunc(reshape);
 
   compute();
 

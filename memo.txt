@@ -147,6 +147,12 @@ https://www.khronos.org/opengl/wiki/Per-Sample_Processing
 Depth Test	深度テスト
 
 
+Synchronization
+https://www.khronos.org/opengl/wiki/Synchronization
+Command state
+unissued -> issued but not complete -> complete
+
+
 Shader
 https://www.khronos.org/opengl/wiki/Shader
 -> Programmable shader
