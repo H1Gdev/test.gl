@@ -105,23 +105,23 @@ static void terminateProgram(GLuint program, GLboolean shaders = GL_TRUE) {
 // shader code
 static const GLchar* vShader[] = {
   "#version 430\n",
-  "in vec3 position;"
-  "uniform mat4 mvpMatrix;" // MVP(Model-View-Projection)
+  // https://www.khronos.org/opengl/wiki/Vertex_Shader#Inputs
+  "in vec3 position;" // Default attribute index is 0.
   "void main() {"
-  "  gl_Position = mvpMatrix * vec4(position, 1.0);"
+  "  gl_Position = vec4(position, 1.0);" // homogeneous vertex position
   "}"
 };
 static const GLchar* fShader[] = {
   "#version 430\n",
   // https://www.khronos.org/opengl/wiki/Fragment_Shader#Output_buffers
-  "out vec4 color0;" // Default color number is 0.
+  "out vec4 color;" // Default color number is 0.
   "void main() {"
 #if 0
   // gl_FragColor and gl_FragData[n] are deprecated.
   "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
   "  gl_FragData[0] = vec4(1.0, 1.0, 1.0, 1.0);"
 #endif
-  "  color0 = vec4(1.0, 1.0, 1.0, 1.0);"
+  "  color = vec4(1.0, 1.0, 1.0, 1.0);"
   "}"
 };
 static const GLchar* cShader[] = {
@@ -236,12 +236,14 @@ static void init(void) {
   // OpenGL 4.6   : Multiple shader objects of the same type may be attached to a single program object.
   // OpenGL ES 3.2: Multiple shader objects of the same type may not be attached to a single program object.
   glAttachShader(rProgram, shader);
+  // Before linking a program that includes a vertex shader, the user may tell OpenGL to assign a particular attribute to a particular index.
+  glBindAttribLocation(rProgram, 0, "position");
 
   // Fragment Shader
   shader = createShader(GL_FRAGMENT_SHADER, fShader);
   glAttachShader(rProgram, shader);
   // Before linking a program that includes a fragment shader, the user may tell OpenGL to assign a particular output variable to a particular fragment color.
-  glBindFragDataLocation(rProgram, 0, "color0");
+  glBindFragDataLocation(rProgram, 0, "color");
 
   // Compute Shader
   shader = createShader(GL_COMPUTE_SHADER, cShader);
@@ -277,7 +279,7 @@ static void display(void) {
   // Compute
   glUseProgram(cProgram);
   {
-    const GLuint program = cProgram;
+    const GLuint& program = cProgram;
 
     const GLsizei width = 8;
     const GLsizei height = 8;
@@ -294,9 +296,28 @@ static void display(void) {
   // Render
   glUseProgram(rProgram);
   {
-    const GLuint program = rProgram;
+    const GLuint& program = rProgram;
+
+    // VBO
+    GLuint posBuf = 0;
+    glGenBuffers(1, &posBuf);
+    glBindBuffer(GL_ARRAY_BUFFER, posBuf);
+    const GLfloat pos[] = {
+        -1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+         1.0f, -1.0f, 0.0f,
+         1.0f,  1.0f, 0.0f,
+    };
+    glBufferData(GL_ARRAY_BUFFER, sizeof(pos), pos, GL_STREAM_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDeleteBuffers(1, &posBuf);
 
     checkError("Render");
+
+    glutSwapBuffers();
   }
 }
 
