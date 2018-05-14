@@ -302,15 +302,32 @@ static void display(void) {
     GLuint posBuf = 0;
     glGenBuffers(1, &posBuf);
     glBindBuffer(GL_ARRAY_BUFFER, posBuf);
+    // display xyz range [-1, 1].
+#if 1
     const GLfloat pos[] = {
         -1.0f, -1.0f, 0.0f,
         -1.0f,  1.0f, 0.0f,
          1.0f, -1.0f, 0.0f,
          1.0f,  1.0f, 0.0f,
     };
+    const GLenum type = GL_FLOAT;
+    const GLboolean normalized = GL_FALSE; // don't care.
+#else
+    // Equivalent
+    const GLbyte pos[] = {
+        -128, -128, 0,
+        -128,  127, 0,
+         127, -128, 0,
+         127,  127, 0,
+    };
+    const GLenum type = GL_BYTE;
+    const GLboolean normalized = GL_TRUE;
+#endif
     glBufferData(GL_ARRAY_BUFFER, sizeof(pos), pos, GL_STREAM_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0);
+
+    const GLuint index = 0; // Attribute index
+    glVertexAttribPointer(index, 3, type, normalized, 0, nullptr);
+    glEnableVertexAttribArray(index);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glDeleteBuffers(1, &posBuf);
