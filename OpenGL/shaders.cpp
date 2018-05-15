@@ -107,6 +107,8 @@ static const GLchar* vShader[] = {
   "#version 430\n",
   // https://www.khronos.org/opengl/wiki/Vertex_Shader#Inputs
   "in vec3 position;" // Default attribute index is 0.
+  // Vertex shader outputs and Fragment shader inputs
+  // https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)#Interpolation_qualifiers
   "void main() {"
   "  gl_Position = vec4(position, 1.0);" // homogeneous vertex position
   "}"
