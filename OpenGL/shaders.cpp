@@ -131,10 +131,11 @@ static const GLchar* cShader[] = {
   "#version 430\n",
   "layout(local_size_x = 8, local_size_y = 8) in;"
   "uniform sampler2D inTex;"
+  "uniform float scale;"
   "layout(binding = 0, rgba8) writeonly uniform image2D outTex;"
   "void main() {"
-  "  ivec2 pos = ivec2(gl_GlobalInvocationID.xy);"
-  "  vec2 normalizedPos = (vec2(pos) + 0.5) / vec2(imageSize(outTex));"
+  "  ivec2 pos = ivec2(gl_GlobalInvocationID.xy);" // output image size
+  "  vec2 normalizedPos = ((vec2(pos) + 0.5) / scale) / vec2(textureSize(inTex, 0));"
   "  imageStore(outTex, pos, texture(inTex, normalizedPos));"
   "}"
 };
