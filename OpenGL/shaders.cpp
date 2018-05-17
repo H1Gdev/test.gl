@@ -120,10 +120,10 @@ static const GLchar* fShader[] = {
   "void main() {"
 #if 0
   // gl_FragColor and gl_FragData[n] are deprecated.
-  "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
-  "  gl_FragData[0] = vec4(1.0, 1.0, 1.0, 1.0);"
+  "  gl_FragColor = vec4(1.0);"
+  "  gl_FragData[0] = vec4(1.0);"
 #endif
-  "  color = vec4(1.0, 1.0, 1.0, 1.0);"
+  "  color = mix(vec4(1.0), vec4(0.0, 0.0, 0.0, 1.0), 0.5);"
   "}"
 };
 static const GLchar* cShader[] = {
@@ -162,7 +162,7 @@ static const GLchar* cShader[] = {
   "  vec2 uv = texture(inTexUV, (vec2(pos / 2) + 0.5) / vec2(textureSize(inTexUV, 0))).rg;"
   "  vec3 yuv = vec3(y, uv);"
 #else
-  // Equivalent
+  // equivalent
   "  vec3 yuv = vec3(0.0);"
   "  yuv.r = texture(inTexY, (vec2(pos) + 0.5) / vec2(textureSize(inTexY, 0))).r;"
   "  yuv.gb = texture(inTexUV, (vec2(pos / 2) + 0.5) / vec2(textureSize(inTexUV, 0))).rg;"
@@ -316,7 +316,7 @@ static void display(void) {
     const GLenum type = GL_FLOAT;
     const GLboolean normalized = GL_FALSE; // don't care.
 #else
-    // Equivalent
+    // equivalent
     const GLbyte pos[] = {
         -128, -128, 0,
         -128,  127, 0,
