@@ -106,11 +106,9 @@ static void terminateProgram(GLuint program, GLboolean shaders = GL_TRUE) {
 static const GLchar* vShader[] = {
   "#version 430\n",
   // https://www.khronos.org/opengl/wiki/Vertex_Shader#Inputs
-  "in vec3 position;" // Default attribute index is 0.
-  // Vertex shader outputs and Fragment shader inputs
-  // https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)#Interpolation_qualifiers
+  "in vec3 pos;" // Default attribute index is 0.
   "void main() {"
-  "  gl_Position = vec4(position, 1.0);" // homogeneous vertex position
+  "  gl_Position = vec4(pos, 1.0);" // homogeneous vertex position
   "}"
 };
 static const GLchar* fShader[] = {
@@ -126,8 +124,38 @@ static const GLchar* fShader[] = {
   "  color = mix(vec4(1.0), vec4(0.0, 0.0, 0.0, 1.0), 0.5);"
   "}"
 };
+#if 0
+// Output texture.
+static const GLchar* vShader[] = {
+  "#version 430\n",
+  "in vec2 pos;"
+  // https://www.khronos.org/opengl/wiki/Type_Qualifier_(GLSL)#Interpolation_qualifiers
+  "out vec2 texCoord;"
+  "void main() {"
+  "  texCoord = (pos * 0.5) + 0.5;"
+  "  gl_Position = vec4(pos, 0.0, 1.0);"
+  "}"
+};
+static const GLchar* fShader[] = {
+  "#version 430\n",
+  "uniform sampler2D inTex;"
+  "in vec2 texCoord;"
+  "out vec4 color;"
+  "void main() {"
+  "  color = texture(inTex, texCoord);"
+  "}"
+};
+#endif
+
 static const GLchar* cShader[] = {
-  // Scale up/down the same aspect ratio textures.
+  "#version 430\n",
+  "layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;"
+  "void main() {"
+  "}"
+};
+#if 0
+// Scale up/down the same aspect ratio texture.
+static const GLchar* cShader[] = {
   "#version 430\n",
   "layout(local_size_x = 8, local_size_y = 8) in;"
   "uniform sampler2D inTex;"
@@ -139,9 +167,10 @@ static const GLchar* cShader[] = {
   "  imageStore(outTex, pos, texture(inTex, normalizedPos));"
   "}"
 };
+#endif
 #if 0
+// Convert from YUV420SP to RGB.
 static const GLchar* cShader[] = {
-  // Convert from YUV420SP to RGB.
   "#version 430\n",
   "layout(local_size_x = 8, local_size_y = 8) in;"
   "uniform sampler2D inTexY;"
@@ -183,9 +212,9 @@ glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width >> 1, height >> 1, GL_RG, GL_UNSIG
 */
 #endif
 #if 0
+// Apply Gaussian blur.
+// http://rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
 static const GLchar* cShader[] = {
-  // Apply Gaussian blur.
-  // http://rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
   "#version 430\n",
   "layout(local_size_x = 8, local_size_y = 8) in;"
   "layout(binding = 0, rgba8) readonly uniform image2D inTex;"
@@ -240,7 +269,7 @@ static void init(void) {
   // OpenGL ES 3.2: Multiple shader objects of the same type may not be attached to a single program object.
   glAttachShader(rProgram, shader);
   // Before linking a program that includes a vertex shader, the user may tell OpenGL to assign a particular attribute to a particular index.
-  glBindAttribLocation(rProgram, 0, "position");
+  glBindAttribLocation(rProgram, 0, "pos");
 
   // Fragment Shader
   shader = createShader(GL_FRAGMENT_SHADER, fShader);
