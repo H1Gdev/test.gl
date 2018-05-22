@@ -335,6 +335,7 @@ static void display(void) {
     glGenBuffers(1, &posBuf);
     glBindBuffer(GL_ARRAY_BUFFER, posBuf);
     // display xyz range [-1, 1].
+    // (0, 0) -> center
 #if 1
     const GLfloat pos[] = {
         -1.0f, -1.0f, 0.0f,
