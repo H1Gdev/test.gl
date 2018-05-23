@@ -50,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
         TextView tv = findViewById(R.id.sample_text);
         tv.setText(stringFromJNI());
         tv.setText(stringFromAAsset(getAssets()));
+
+        outputGLInfo();
     }
 
     @Override
@@ -72,4 +74,5 @@ public class MainActivity extends AppCompatActivity {
      */
     public native String stringFromJNI();
     public native String stringFromAAsset(AssetManager assetManager);
+    public native void outputGLInfo();
 }

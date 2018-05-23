@@ -39,3 +39,21 @@ Java_com_example_h1gdev_androidapp_MainActivity_stringFromAAsset(
     AAsset_close(aAsset);
     return env->NewStringUTF(hello.c_str());
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_example_h1gdev_androidapp_MainActivity_outputGLInfo(
+        JNIEnv *env,
+        jobject /* this */) {
+    LOGI("GL_VENDOR is %s", glGetString(GL_VENDOR));
+    LOGI("GL_RENDERER is %s", glGetString(GL_RENDERER));
+    LOGI("GL_VERSION is %s", glGetString(GL_VERSION));
+    LOGI("GL_SHADING_LANGUAGE_VERSION is %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+    LOGI("GL_EXTENSIONS is");
+    GLint extensions = 0;
+    glGetIntegerv(GL_NUM_EXTENSIONS, &extensions);
+    for (GLint i = 0; i < extensions; ++i) {
+        LOGI("[%3d]%s", i, glGetStringi(GL_EXTENSIONS, i));
+    }
+}
