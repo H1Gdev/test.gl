@@ -5,3 +5,7 @@ https://www.khronos.org/opencl/
 
 WebCL
 https://www.khronos.org/webcl/
+
+
+OpenCL C
+OpenCL C++
