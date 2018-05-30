@@ -17,6 +17,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
             // do not use gl...
+
+            outputGLInfo();
         }
 
         @Override
@@ -50,8 +52,6 @@ public class MainActivity extends AppCompatActivity {
         TextView tv = findViewById(R.id.sample_text);
         tv.setText(stringFromJNI());
         tv.setText(stringFromAAsset(getAssets()));
-
-        outputGLInfo();
     }
 
     @Override
