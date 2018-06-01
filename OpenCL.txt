@@ -16,3 +16,13 @@ Host <-(Command)-> OpenCL device
                      Processing Element(PE)
 [CPU]              [CPU, GPU, DSP...]
 host code          device kernel code
+
+
+Intel SDK for OpenCL Applications
+https://software.intel.com/intel-opencl
+
+CUDA Toolkit
+https://developer.nvidia.com/cuda-toolkit
+
+Adreno OpenCL SDK
+https://developer.qualcomm.com/software/adreno-gpu-sdk/tools
