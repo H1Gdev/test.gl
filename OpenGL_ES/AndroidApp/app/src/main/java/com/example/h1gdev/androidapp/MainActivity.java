@@ -19,6 +19,9 @@ public class MainActivity extends AppCompatActivity {
             // do not use gl...
 
             outputGLInfo();
+
+            outputCLInfo();
+            executeOpenCLSdkExamples();
         }
 
         @Override
@@ -35,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     // Used to load the 'native-lib' library on application startup.
     static {
         System.loadLibrary("native-lib");
+        System.loadLibrary("opencl-sdk");
     }
 
     @Override
@@ -74,5 +78,9 @@ public class MainActivity extends AppCompatActivity {
      */
     public native String stringFromJNI();
     public native String stringFromAAsset(AssetManager assetManager);
+
     public native void outputGLInfo();
+
+    public native int outputCLInfo();
+    public native int executeOpenCLSdkExamples();
 }

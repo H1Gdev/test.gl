@@ -60,3 +60,5 @@ target_link_libraries( # Specifies the target library.
                        ${android-lib}
                        ${log-lib} )
 target_link_libraries(native-activity app-glue ${gles3-lib} ${egl-lib} ${android-lib} ${log-lib})
+
+add_subdirectory(src/main/cpp/opencl-sdk)
