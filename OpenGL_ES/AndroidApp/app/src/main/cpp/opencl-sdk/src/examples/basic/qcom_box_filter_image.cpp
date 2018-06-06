@@ -48,7 +48,11 @@ static const char *PROGRAM_SOURCE[] = {
 
 static const cl_uint PROGRAM_SOURCE_LEN = sizeof(PROGRAM_SOURCE) / sizeof(const char *);
 
+#ifdef EXECUTE_IN_JNI
+int qcom_box_filter_image_main(int argc, const char** argv)
+#else
 int main(int argc, char** argv)
+#endif
 {
     if (argc < 3)
     {

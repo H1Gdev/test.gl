@@ -61,7 +61,11 @@ static cl_half CONVOLUTION_KERNEL[CONV_KERNEL_HEIGHT * CONV_KERNEL_WIDTH] = {
     zero,   zero,  neg1,   zero,   zero
 };
 
+#ifdef EXECUTE_IN_JNI
+int qcom_convolve_image_main(int argc, const char** argv)
+#else
 int main(int argc, char** argv)
+#endif
 {
     if (argc < 3)
     {

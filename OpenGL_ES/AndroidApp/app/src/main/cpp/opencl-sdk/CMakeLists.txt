@@ -15,8 +15,12 @@ set(COMMON_SOURCE_FILES
 
 add_library(opencl-sdk SHARED
             ${COMMON_SOURCE_FILES}
+            src/examples/basic/compressed_image.cpp
             src/examples/basic/hello_world.cpp
             src/examples/basic/qcom_block_match_sad.cpp
+            src/examples/basic/qcom_block_match_ssd.cpp
+            src/examples/basic/qcom_box_filter_image.cpp
+            src/examples/basic/qcom_convolve_image.cpp
             test.cpp
             opencl.cpp)
 

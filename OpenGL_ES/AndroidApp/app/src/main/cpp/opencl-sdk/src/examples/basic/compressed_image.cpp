@@ -62,7 +62,11 @@ static bool is_format_supported(const std::vector<cl_image_format> &formats, con
 #define WIDTH(x)   std::get<2>((x))
 #define HEIGHT(x)  std::get<3>((x))
 
+#ifdef EXECUTE_IN_JNI
+int compressed_image_main(int argc, const char** argv)
+#else
 int main(int argc, char** argv)
+#endif
 {
     if (argc < 3)
     {

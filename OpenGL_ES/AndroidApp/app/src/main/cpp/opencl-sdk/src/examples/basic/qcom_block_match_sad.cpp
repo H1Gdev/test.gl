@@ -108,6 +108,14 @@ int main(int argc, char** argv)
         std::exit(EXIT_FAILURE);
     }
 
+#ifdef EXECUTE_IN_JNI
+    if (!wrapper.check_extension_support("cl_qcom_extract_image_plane"))
+    {
+        std::cerr << "Extension cl_qcom_extract_image_plane needed for CL_QCOM_NV12_Y and CL_QCOM_NV12_UV are not supported.\n";
+        std::exit(EXIT_FAILURE);
+    }
+#endif
+
     if (!wrapper.check_extension_support("cl_qcom_accelerated_image_ops"))
     {
         std::cerr << "Extension cl_qcom_accelerated_image_ops needed for qcom_block_match_sadf is not supported.\n";
@@ -134,6 +142,47 @@ int main(int argc, char** argv)
     cl_image_format src_nv12_format;
     src_nv12_format.image_channel_order     = CL_QCOM_NV12;
     src_nv12_format.image_channel_data_type = CL_UNORM_INT8;
+#ifdef EXECUTE_IN_JNI
+    {
+        const cl_mem_flags flags = CL_MEM_READ_ONLY | CL_MEM_OTHER_IMAGE_QCOM | CL_MEM_USE_HOST_PTR | CL_MEM_EXT_HOST_PTR_QCOM;
+        const cl_mem_object_type image_type = CL_MEM_OBJECT_IMAGE2D;
+        cl_uint num_image_formats = 0;
+        cl_int err = clGetSupportedImageFormats(
+                context,
+                flags,
+                image_type,
+                0,
+                nullptr,
+                &num_image_formats
+        );
+        if (err != CL_SUCCESS) {
+            std::exit(err);
+        }
+        cl_image_format image_formats[num_image_formats];
+        err = clGetSupportedImageFormats(
+                context,
+                flags,
+                image_type,
+                num_image_formats,
+                image_formats,
+                nullptr
+        );
+        if (err != CL_SUCCESS) {
+            std::exit(err);
+        }
+        err = CL_IMAGE_FORMAT_NOT_SUPPORTED;
+        for (cl_uint i = 0; i < num_image_formats; ++i) {
+            if (src_nv12_format.image_channel_order == image_formats[i].image_channel_order &&
+                    src_nv12_format.image_channel_data_type == image_formats[i].image_channel_data_type) {
+                err = CL_SUCCESS;
+                break;
+            }
+        }
+        if (err != CL_SUCCESS) {
+            std::exit(err);
+        }
+    }
+#endif
 
     cl_image_desc src_nv12_desc;
     std::memset(&src_nv12_desc, 0, sizeof(src_nv12_desc));
