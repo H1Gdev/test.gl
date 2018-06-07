@@ -17,6 +17,7 @@ add_library(opencl-sdk SHARED
             ${COMMON_SOURCE_FILES}
             src/examples/basic/hello_world.cpp
             src/examples/basic/qcom_block_match_sad.cpp
+            test.cpp
             opencl.cpp)
 
 add_definitions(-DEXECUTE_IN_JNI)

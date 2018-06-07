@@ -5,13 +5,15 @@
 #define LOG_TAG "OpenCL"
 #include "log.h"
 
+int outputCLInfo();
+
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_example_h1gdev_androidapp_MainActivity_outputCLInfo(
         JNIEnv* /* env */,
         jobject /* this */) {
     LOGD("[S]%s()", __func__);
-    jint ret = 0;
+    jint ret = (jint)outputCLInfo();
     LOGD("[E]%s()=%d", __func__, ret);
     return ret;
 }
