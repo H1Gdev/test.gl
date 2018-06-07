@@ -18,6 +18,19 @@ Java_com_example_h1gdev_androidapp_MainActivity_outputCLInfo(
     return ret;
 }
 
+int executeOpenCL();
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_example_h1gdev_androidapp_MainActivity_executeOpenCL(
+        JNIEnv* /* env */,
+        jobject /* this */) {
+    LOGD("[S]%s()", __func__);
+    jint ret = (jint)executeOpenCL();
+    LOGD("[E]%s()=%d", __func__, ret);
+    return ret;
+}
+
 //#define BASIC_COMPRESSED_IMAGE
 #define BASIC_HELLO_WORLD
 //#define BASIC_QCOM_BLOCK_MATCH_SAD

@@ -144,3 +144,273 @@ int outputCLInfo() {
     }
     return ret;
 }
+
+
+static void notifyContext(const char* errinfo, const void* private_info, size_t cb, void* user_data) {
+    LOGE("notifyContext");
+    LOGE("errinfo:%s", errinfo);
+    LOGE("private_info:%p, cb:%zu", private_info, cb);
+    LOGE("user_data:%p", user_data);
+}
+
+int executeOpenCL() {
+    int ret = 0;
+
+    cl_context context = 0;
+    cl_command_queue command_queue = 0;
+    cl_program program = 0;
+    cl_kernel kernel = 0;
+    cl_event event = 0;
+    try {
+        cl_int err;
+
+        // Platform(s)
+        cl_uint num_platforms = 0;
+        err = clGetPlatformIDs(0, nullptr, &num_platforms);
+        if (err != CL_SUCCESS) {
+            throw err;
+        } else {
+            LOGD("num_platforms=%u", num_platforms);
+        }
+        cl_platform_id platforms[num_platforms];
+        err = clGetPlatformIDs(num_platforms, platforms, nullptr);
+        if (err != CL_SUCCESS) {
+            throw err;
+        }
+        cl_platform_id platform = platforms[0];
+
+        const cl_device_type device_type = CL_DEVICE_TYPE_GPU;
+#if 1
+        // Platform - Device(s)
+        cl_uint num_devices = 0;
+        err = clGetDeviceIDs(platform, device_type, 0, nullptr, &num_devices);
+        if (err != CL_SUCCESS) {
+            throw err;
+        } else {
+            LOGD("num_devices=%u", num_devices);
+        }
+        cl_device_id devices[num_devices];
+        err = clGetDeviceIDs(platform, device_type, num_devices, devices, nullptr);
+        if (err != CL_SUCCESS) {
+            throw err;
+        }
+        cl_device_id device = devices[0];
+
+        // Context - Device(s)
+        context = clCreateContext(nullptr, 1, &device, notifyContext, nullptr, &err);
+        if (err != CL_SUCCESS) {
+            throw err;
+        }
+#else
+        // Context - Device(s)
+        context = clCreateContextFromType(nullptr, device_type, notify, nullptr, &err);
+        if (err != CL_SUCCESS) {
+            throw err;
+        }
+
+        size_t num_devices = 0;
+        err = clGetContextInfo(context, CL_CONTEXT_DEVICES, 0, nullptr, &num_devices);
+        if (err != CL_SUCCESS) {
+            throw err;
+        }
+        cl_device_id devices[num_devices];
+        err = clGetContextInfo(context, CL_CONTEXT_DEVICES, num_devices, devices, nullptr);
+        if (err != CL_SUCCESS) {
+            throw err;
+        }
+        cl_device_id device = devices[0];
+#endif
+        // (Context, Device) - Queue(s)
+        command_queue = clCreateCommandQueue(context, device, 0, &err);
+        if (err != CL_SUCCESS) {
+            throw err;
+        }
+
+        // (Context, Device) - Program(s)
+        {
+            // @formatter:off
+            const char* source =
+                    // Kernel
+                    "kernel void execute0(int n) {"
+                    "}";
+            // @formatter:on
+            // Source, Binary, Built-in kernels, or IL.
+            program = clCreateProgramWithSource(context, 1, &source, nullptr, &err);
+            if (err != CL_SUCCESS) {
+                throw err;
+            }
+
+#if 0
+            const cl_device_id* device_list = nullptr;
+            cl_uint num_program_devices = 0;
+#else
+            const cl_device_id* device_list = &device;
+            cl_uint num_program_devices = 1;
+#endif
+            // @formatter:off
+            const char* options =
+                    " -Werror"
+                    " -cl-std=CL2.0";
+            // @formatter:on
+            void (* pfn_notify)(cl_program, void*) = nullptr;   // wait for build to complete.
+            err = clBuildProgram(program, num_program_devices, device_list, options, pfn_notify, nullptr);
+            if (err != CL_SUCCESS) {
+                size_t size = 0;
+                {
+                    err = clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_OPTIONS, 0, nullptr, &size);
+                    if (err != CL_SUCCESS) {
+                        throw err;
+                    }
+                    char value[size];
+                    err = clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_OPTIONS, size, value, nullptr);
+                    if (err != CL_SUCCESS) {
+                        throw err;
+                    }
+                    LOGD("CL_PROGRAM_BUILD_OPTIONS=%s", value);
+                }
+                {
+                    cl_build_status value;
+                    err = clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_STATUS, sizeof(cl_build_status), &value, nullptr);
+                    if (err != CL_SUCCESS) {
+                        throw err;
+                    }
+                    LOGD("CL_PROGRAM_BUILD_STATUS=%d", value);
+                }
+                {
+                    err = clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &size);
+                    if (err != CL_SUCCESS) {
+                        throw err;
+                    }
+                    char value[size];
+                    err = clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, size, &value, nullptr);
+                    if (err != CL_SUCCESS) {
+                        throw err;
+                    }
+                    LOGE("CL_PROGRAM_BUILD_LOG=%s", value);
+                }
+                throw err;
+            }
+        }
+
+        // Program - Kernel(s)
+        const char* kernel_name = "execute0";
+        kernel = clCreateKernel(program, kernel_name, &err);
+        if (err != CL_SUCCESS) {
+            throw err;
+        }
+
+        const cl_int arg0 = 100;
+        err = clSetKernelArg(kernel, 0, sizeof(arg0), &arg0);
+        if (err != CL_SUCCESS) {
+            throw err;
+        }
+#if 1
+        {
+            size_t size;
+            err = clGetKernelArgInfo(kernel, 0, CL_KERNEL_ARG_NAME, 0, nullptr, &size);
+            if (err != CL_SUCCESS) {
+                throw err;
+            }
+            char value[size];
+            err = clGetKernelArgInfo(kernel, 0, CL_KERNEL_ARG_NAME, size, value, nullptr);
+            if (err != CL_SUCCESS) {
+                throw err;
+            }
+            LOGD("[0]CL_KERNEL_ARG_NAME:%s", value);
+        }
+#endif
+
+        // work-group
+        //  work-item
+        const cl_uint dimension = 2;
+        const size_t global_work_offset[] = {0, 0};
+        const size_t global_work_size[] = {10, 10}; // work-groups
+        const size_t local_work_size[] = {5, 5};    // work-items
+        err = clEnqueueNDRangeKernel(
+                command_queue,
+                kernel,
+                dimension,
+                global_work_offset,
+                global_work_size,
+                local_work_size,
+                0,
+                nullptr,
+                &event
+        );
+        if (err != CL_SUCCESS) {
+            throw err;
+        }
+
+        err = clFlush(command_queue);
+        if (err != CL_SUCCESS) {
+            throw err;
+        }
+
+        // Event
+        err = clWaitForEvents(1, &event);
+        if (err != CL_SUCCESS) {
+            throw err;
+        }
+#if 1
+        {
+            cl_int status;
+            clGetEventInfo(event, CL_EVENT_COMMAND_EXECUTION_STATUS, sizeof(status), &status, nullptr);
+            if (err != CL_SUCCESS) {
+                throw err;
+            } else if (status != CL_COMPLETE) {
+                LOGE("status=%d", status);
+                throw err;
+            }
+        }
+#endif
+        err = clReleaseEvent(event);
+        if (err != CL_SUCCESS) {
+            throw err;
+        }
+        event = 0;
+
+        err = clFinish(command_queue);
+        if (err != CL_SUCCESS) {
+            throw err;
+        }
+
+        throw err;  // for finalize...
+    } catch (cl_int e) {
+        cl_int err;
+
+        if (event != 0) {
+            err = clReleaseEvent(event);
+            if (err != CL_SUCCESS) {
+                LOGE("clReleaseEvent()=%d", err);
+            }
+        }
+
+        if (kernel != 0) {
+            err = clReleaseKernel  (kernel);
+            if (err != CL_SUCCESS) {
+                LOGE("clReleaseKernel()=%d", err);
+            }
+        }
+        if (program != 0) {
+            err = clReleaseProgram (program);
+            if (err != CL_SUCCESS) {
+                LOGE("clReleaseProgram()=%d", err);
+            }
+        }
+        if (command_queue != 0) {
+            err = clReleaseCommandQueue(command_queue);
+            if (err != CL_SUCCESS) {
+                LOGE("clReleaseCommandQueue()=%d", err);
+            }
+        }
+        if (context != 0) {
+            err = clReleaseContext(context);
+            if (err != CL_SUCCESS) {
+                LOGE("clReleaseContext()=%d", err);
+            }
+        }
+
+        ret = (int)e;
+    }
+    return ret;
+}

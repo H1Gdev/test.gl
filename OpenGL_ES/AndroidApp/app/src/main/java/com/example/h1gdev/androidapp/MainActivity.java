@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
             outputGLInfo();
 
             outputCLInfo();
+            executeOpenCL();
             executeOpenCLSdkExamples();
         }
 
@@ -82,5 +83,6 @@ public class MainActivity extends AppCompatActivity {
     public native void outputGLInfo();
 
     public native int outputCLInfo();
+    public native int executeOpenCL();
     public native int executeOpenCLSdkExamples();
 }
