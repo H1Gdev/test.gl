@@ -84,7 +84,11 @@ static cl_float CONVOLUTION_FILTER[CONV_FILTER_HEIGHT * CONV_FILTER_WIDTH] = {
     (1.f / 16.f), (1.f / 8.f), (1.f / 16.f)
 };
 
+#ifdef EXECUTE_IN_JNI
+int convolution_main(int argc, const char** argv)
+#else
 int main(int argc, char** argv)
+#endif
 {
     if (argc < 3)
     {

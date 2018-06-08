@@ -68,7 +68,11 @@ static cl_half CONVOLUTION_FILTER[CONV_FILTER_HEIGHT * CONV_FILTER_WIDTH] = {
     sixteenth, eighth, sixteenth
 };
 
+#ifdef EXECUTE_IN_JNI
+int accelerated_convolution_main(int argc, const char** argv)
+#else
 int main(int argc, char** argv)
+#endif
 {
     if (argc < 3)
     {

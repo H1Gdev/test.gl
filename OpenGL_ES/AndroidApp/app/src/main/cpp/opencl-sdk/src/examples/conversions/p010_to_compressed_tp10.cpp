@@ -118,7 +118,11 @@ static const cl_uint PROGRAM_SOURCE_LEN = sizeof(PROGRAM_SOURCE) / sizeof(const 
 #define WIDTH(x)   std::get<2>((x))
 #define HEIGHT(x)  std::get<3>((x))
 
+#ifdef EXECUTE_IN_JNI
+int p010_to_compressed_tp10_main(int argc, const char** argv)
+#else
 int main(int argc, char** argv)
+#endif
 {
     if (argc < 3)
     {
