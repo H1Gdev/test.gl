@@ -146,6 +146,10 @@ int outputCLInfo() {
 }
 
 
+#define OPENCL_C_STYLE
+#define OPENCL_CPP_STYLE
+
+#ifdef OPENCL_C_STYLE
 static void notifyContext(const char* errinfo, const void* private_info, size_t cb, void* user_data) {
     LOGE("notifyContext");
     LOGE("errinfo:%s", errinfo);
@@ -153,8 +157,8 @@ static void notifyContext(const char* errinfo, const void* private_info, size_t 
     LOGE("user_data:%p", user_data);
 }
 
-int executeOpenCL() {
-    int ret = 0;
+cl_int executeC() {
+    cl_int ret = 0;
 
     cl_context context = 0;
     cl_command_queue command_queue = 0;
@@ -410,7 +414,137 @@ int executeOpenCL() {
             }
         }
 
-        ret = (int)e;
+        ret = e;
     }
+    return ret;
+}
+#endif
+#ifdef OPENCL_CPP_STYLE
+#define CL_HPP_ENABLE_EXCEPTIONS
+#include <CL/cl2.hpp>
+
+cl_int executeCpp() {
+    cl_int ret = 0;
+
+    try {
+#if 0
+        {
+            // Provide getDefault() and setDefault() method.
+            cl::Platform platform = cl::Platform::getDefault();
+            LOGD("[Platform]%s", platform.getInfo<CL_PLATFORM_NAME>().c_str());
+            cl::Device device = cl::Device::getDefault();
+            LOGD("[Device]%s", device.getInfo<CL_DEVICE_NAME>().c_str());
+            cl::Context context = cl::Context::getDefault();
+            LOGD("[Context]Device:%s", context.getInfo<CL_CONTEXT_DEVICES>()[0].getInfo<CL_DEVICE_NAME>().c_str());
+            cl::CommandQueue queue = cl::CommandQueue::getDefault();
+            LOGD("[CommandQueue]Device:%s", queue.getInfo<CL_QUEUE_DEVICE>().getInfo<CL_DEVICE_NAME>().c_str());
+        }
+#endif
+
+        // Platform(s)
+        std::vector<cl::Platform> allPlatforms;
+        cl::Platform::get(&allPlatforms);
+        LOGD("num_platforms=%zu", allPlatforms.size());
+        cl::Platform platform = allPlatforms[0];
+
+        const cl_device_type device_type = CL_DEVICE_TYPE_GPU;
+#if 1
+        // Platform - Device(s)
+        std::vector<cl::Device> devices;
+        platform.getDevices(device_type, &devices);
+        LOGD("num_devices=%zu", devices.size());
+        cl::Device device = devices[0];
+
+        // Context - Device(s)
+        cl::Context context(device);
+#else
+        // Context - Device(s)
+        cl::Context context(device_type);
+
+        std::vector<cl::Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
+        cl::Device device = devices[0];
+#endif
+        // (Context, Device) - Queue(s)
+        cl::CommandQueue queue = cl::CommandQueue(context, device);
+
+        // (Context, Device) - Program(s)
+        cl::Program program;
+        {
+            // @formatter:off
+            std::string source =
+                    // Kernel
+                    "kernel void execute0(int n) {"
+                    "}";
+            // @formatter:on
+            // Source, Binary, Built-in kernels, or IL.
+            program = cl::Program(context, source);
+
+            // @formatter:off
+            std::string options =
+                    " -Werror"
+                    " -cl-std=CL2.0";
+            // @formatter:on
+#if 1
+            program.build(options.c_str());
+#else
+            program.build(std::vector<cl::Device>({device}), options.c_str());
+#endif
+        }
+
+        // Program - Kernel(s)
+        cl::Kernel kernel(program, "execute0");
+
+        const cl_int arg0 = 100;
+        kernel.setArg(0, arg0);
+#if 1
+        LOGD("[0]CL_KERNEL_ARG_NAME:%s", kernel.getArgInfo<CL_KERNEL_ARG_NAME>(0).c_str());
+#endif
+
+        // work-group
+        //  work-item
+        const cl::NDRange offset(0, 0);
+        const cl::NDRange global(10, 10);   // work-groups
+        const cl::NDRange local(5, 5);      // work-items
+        cl::Event event;
+        queue.enqueueNDRangeKernel(kernel, offset, global, local, nullptr, &event);
+
+        queue.flush();
+
+        // Event
+        event.wait();
+#if 1
+        {
+            cl_int status = event.getInfo<CL_EVENT_COMMAND_EXECUTION_STATUS>();
+            if (status != CL_COMPLETE) {
+                LOGE("status=%d", status);
+            }
+        }
+#endif
+
+        queue.finish();
+    } catch (cl::BuildError& e) {
+        LOGE("%s", e.what());
+        for (const std::pair<cl::Device, std::string>& buildLog : e.getBuildLog()) {
+            LOGE("%s:%s", buildLog.first.getInfo<CL_DEVICE_NAME>().c_str(), buildLog.second.c_str());
+        }
+        ret = e.err();
+    } catch (cl::Error& e) {
+        LOGE("%s", e.what());
+        ret = e.err();
+    }
+    return ret;
+}
+#endif
+
+int executeOpenCL() {
+    int ret = 0;
+#ifdef OPENCL_C_STYLE
+    LOGD("Execute OpenCL C");
+    ret |= (int)executeC();
+#endif
+#ifdef OPENCL_CPP_STYLE
+    LOGD("Execute OpenCL C++");
+    ret |= (int)executeCpp();
+#endif
     return ret;
 }
